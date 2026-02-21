@@ -17,17 +17,17 @@ local ANIMATIONS = {
     charge = "rbxassetid://123200367867450"
 }
 
-local WALK_PLAY_SPEED = 1
+local WALK_PLAY_SPEED = 1.1
 local DASH_FORCE = 140
 local DASH_TIME = 0.25
 local DASH_COOLDOWN = 2.3
-local MAX_DASHES = 6
-local DASH_RECHARGE_TIME = 25
+local MAX_DASHES = 3
+local DASH_RECHARGE_TIME = 12
 local PUNCH_COOLDOWN = 2.3
 local LONG_PUNCH_SPEED = 0.3
 local chargeLength = 0.91
 local crossfadeTime = 0.03
-local POWERUP_TIME = 15
+local POWERUP_TIME = 6
 
 local SUN_SIZE = 11
 local SUN_COLOR = Color3.fromRGB(255, 165, 0)
@@ -38,12 +38,12 @@ local SUN_SUMMON_TIME = 1.0
 local SUN_FIRE_TEXTURE = "rbxasset://textures/particles/fire_main.dds"
 
 -- ORBIT + SWAY + ALIVE SETTINGS
-local ORBIT_RADIUS = 13              -- charge orbit distance
+local ORBIT_RADIUS = 18              -- charge orbit distance
 local BEHIND_DISTANCE = 13           -- normal idle/return distance (fixed close)
 local ORBIT_SPEED = 2.2
-local ORBIT_HEIGHT = 5
-local ORBIT_BOB_AMP = 3.2
-local ORBIT_BOB_FREQ = 3.1
+local ORBIT_HEIGHT = 7
+local ORBIT_BOB_AMP = 2.1
+local ORBIT_BOB_FREQ = 2.3
 
 local SWAY_AMP = 1.8
 local SWAY_FREQ = 1.1
@@ -855,5 +855,3 @@ UserInputService.InputBegan:Connect(function(input, gp)
         toggleCharge(hrp)
     end
 end)
-
-print("Sun God script – normal sun orb now close (~13 studs behind), charge orbit 13 studs, your return sound")
