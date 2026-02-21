@@ -492,7 +492,7 @@ local function setupCharge(hrp)
     chargeSoundA = Instance.new("Sound", hrp)
     chargeSoundA.SoundId = "rbxassetid://84700238102918"
     chargeSoundA.Looped = false
-    chargeSoundA.Volume = 0
+    chargeSoundA.Volume = 2
 
     chargeSoundB = chargeSoundA:Clone()
     chargeSoundB.Parent = hrp
