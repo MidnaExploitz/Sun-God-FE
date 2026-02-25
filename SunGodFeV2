@@ -6,7 +6,6 @@ local TweenService = game:GetService("TweenService")
 local Debris = game:GetService("Debris")
 local lp = Players.LocalPlayer
 local camera = workspace.CurrentCamera
-
 -- CONFIG
 local ANIMATIONS = {
     idle = "rbxassetid://99638411514722",
@@ -16,7 +15,6 @@ local ANIMATIONS = {
     punch = "rbxassetid://119999999999999",
     charge = "rbxassetid://123200367867450"
 }
-
 local WALK_PLAY_SPEED = 1.1
 local DASH_FORCE = 140
 local DASH_TIME = 0.25
@@ -28,7 +26,6 @@ local LONG_PUNCH_SPEED = 0.3
 local chargeLength = 0.91
 local crossfadeTime = 0.03
 local POWERUP_TIME = 6
-
 local SUN_SIZE = 11
 local SUN_COLOR = Color3.fromRGB(255, 165, 0)
 local SUN_MATERIAL = Enum.Material.Neon
@@ -36,29 +33,29 @@ local SUN_BOB_AMPLITUDE = 2
 local SUN_BOB_FREQUENCY = 2
 local SUN_SUMMON_TIME = 1.0
 local SUN_FIRE_TEXTURE = "rbxasset://textures/particles/fire_main.dds"
-
 -- ORBIT + SWAY + ALIVE SETTINGS
-local ORBIT_RADIUS = 18              -- charge orbit distance
-local BEHIND_DISTANCE = 13           -- normal idle/return distance (fixed close)
+local ORBIT_RADIUS = 18 -- charge orbit distance
+local BEHIND_DISTANCE = 13 -- normal idle/return distance (fixed close)
 local ORBIT_SPEED = 2.2
 local ORBIT_HEIGHT = 7
 local ORBIT_BOB_AMP = 2.1
 local ORBIT_BOB_FREQ = 2.3
-
 local SWAY_AMP = 1.8
 local SWAY_FREQ = 1.1
 local SWAY_ROT_SPEED = 0.7
-
 local TRANSITION_TIME = 1.1
-
 local PULSE_MIN = 0.94
 local PULSE_MAX = 1.08
 local PULSE_SPEED = 1.4
-
+-- ELLIPTICAL ORBIT SETTINGS (during charge)
+local ORBIT_ECCENTRICITY = 0.35       -- 0 = circle, 0.3–0.45 feels very moon-like but visible, 0.6+ is comet crazy
+local ORBIT_MAJOR_AXIS = ORBIT_RADIUS  -- longest distance direction (semi-major)
+local ORBIT_MINOR_AXIS = ORBIT_MAJOR_AXIS * math.sqrt(1 - ORBIT_ECCENTRICITY^2)
+local FOCUS_OFFSET = ORBIT_MAJOR_AXIS * ORBIT_ECCENTRICITY  -- distance from geometric center to "Earth" focus
+local ELLIPSE_ROTATION = 0             -- you can randomize or animate this later (in radians, e.g. math.rad(45))
 -- SOUNDS
 local CHARGE_LOOP_SOUND = "rbxassetid://84700238102918"
 local CHARGE_RETURN_SOUND = "rbxassetid://74424239140462"
-
 -- STATE
 local tracks = {}
 local dashOnCooldown = false
@@ -79,46 +76,38 @@ local rechargeInterval = DASH_RECHARGE_TIME / MAX_DASHES
 local originalAnchored = false
 local originalWalkSpeed = 16
 local titleBillboard
-
 -- Toggle states
 local sunOrbEnabled = true
 local dashTrailEnabled = true
 local cameraShakeEnabled = true
 local charShakeEnabled = true
-
 -- Sun helpers
 local transitionStartTime = 0
 local wasChargingLastFrame = false
-
 -- GUI SETUP ──────────────────────────────────────────────────────────────────────
 local screenGui = Instance.new("ScreenGui")
 screenGui.Name = "CombatGUI"
 screenGui.ResetOnSpawn = false
 screenGui.Parent = lp:WaitForChild("PlayerGui")
-
 local chargeFrame = Instance.new("Frame", screenGui)
 chargeFrame.Size = UDim2.new(0, 400, 0, 35)
 chargeFrame.Position = UDim2.new(0.5, -200, 0.85, 0)
 chargeFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
 chargeFrame.BorderSizePixel = 0
 Instance.new("UICorner", chargeFrame).CornerRadius = UDim.new(0, 8)
-
 local chargeStroke = Instance.new("UIStroke", chargeFrame)
 chargeStroke.Color = Color3.fromRGB(255, 255, 0)
 chargeStroke.Transparency = 0.5
 chargeStroke.Thickness = 2
-
 local chargeFill = Instance.new("Frame", chargeFrame)
 chargeFill.Size = UDim2.new(0, 0, 1, 0)
 chargeFill.BackgroundColor3 = Color3.fromRGB(255, 255, 0)
 Instance.new("UICorner", chargeFill).CornerRadius = UDim.new(0, 8)
-
 local chargeGradient = Instance.new("UIGradient", chargeFill)
 chargeGradient.Color = ColorSequence.new{
     ColorSequenceKeypoint.new(0, Color3.fromRGB(255,255,0)),
     ColorSequenceKeypoint.new(1, Color3.fromRGB(255,165,0))
 }
-
 local chargeLabel = Instance.new("TextLabel", chargeFrame)
 chargeLabel.Size = UDim2.new(1,0,1,0)
 chargeLabel.BackgroundTransparency = 1
@@ -127,30 +116,25 @@ chargeLabel.TextColor3 = Color3.fromRGB(255,255,255)
 chargeLabel.TextStrokeTransparency = 0.8
 chargeLabel.Font = Enum.Font.GothamBold
 chargeLabel.TextSize = 18
-
 local dashFrame = Instance.new("Frame", screenGui)
 dashFrame.Size = UDim2.new(0, 200, 0, 30)
 dashFrame.Position = UDim2.new(0.5, -100, 0.8, 0)
 dashFrame.BackgroundColor3 = Color3.fromRGB(30,30,30)
 dashFrame.BorderSizePixel = 0
 Instance.new("UICorner", dashFrame).CornerRadius = UDim.new(0,8)
-
 local dashStroke = Instance.new("UIStroke", dashFrame)
 dashStroke.Color = Color3.fromRGB(255,255,0)
 dashStroke.Transparency = 0.5
 dashStroke.Thickness = 2
-
 local dashFill = Instance.new("Frame", dashFrame)
 dashFill.Size = UDim2.new(1,0,1,0)
 dashFill.BackgroundColor3 = Color3.fromRGB(255,255,0)
 Instance.new("UICorner", dashFill).CornerRadius = UDim.new(0,8)
-
 local dashGradient = Instance.new("UIGradient", dashFill)
 dashGradient.Color = ColorSequence.new{
     ColorSequenceKeypoint.new(0, Color3.fromRGB(255,255,0)),
     ColorSequenceKeypoint.new(1, Color3.fromRGB(255,165,0))
 }
-
 local dashLabel = Instance.new("TextLabel", dashFrame)
 dashLabel.Size = UDim2.new(1,0,1,0)
 dashLabel.BackgroundTransparency = 1
@@ -159,14 +143,12 @@ dashLabel.TextColor3 = Color3.fromRGB(255,255,255)
 dashLabel.TextStrokeTransparency = 0.8
 dashLabel.Font = Enum.Font.GothamBold
 dashLabel.TextSize = 18
-
 -- CONTROLS GUI ───────────────────────────────────────────────────────────────────
 local controlsGui = Instance.new("ScreenGui")
 controlsGui.Name = "ControlsGUI"
 controlsGui.ResetOnSpawn = false
 controlsGui.Enabled = false
 controlsGui.Parent = lp:WaitForChild("PlayerGui")
-
 local controlsFrame = Instance.new("Frame", controlsGui)
 controlsFrame.Size = UDim2.new(0, 260, 0, 380)
 controlsFrame.Position = UDim2.new(0.5, -130, 0.5, -190)
@@ -174,12 +156,10 @@ controlsFrame.BackgroundColor3 = Color3.fromRGB(255, 215, 0)
 controlsFrame.BackgroundTransparency = 0.35
 controlsFrame.BorderSizePixel = 0
 Instance.new("UICorner", controlsFrame).CornerRadius = UDim.new(0, 12)
-
 local controlsStroke = Instance.new("UIStroke", controlsFrame)
 controlsStroke.Color = Color3.fromRGB(255, 165, 0)
 controlsStroke.Thickness = 2
 controlsStroke.Transparency = 0.3
-
 local title = Instance.new("TextLabel", controlsFrame)
 title.Size = UDim2.new(1,0,0,45)
 title.BackgroundTransparency = 1
@@ -188,13 +168,11 @@ title.TextColor3 = Color3.fromRGB(30,30,30)
 title.Font = Enum.Font.GothamBold
 title.TextSize = 26
 title.TextStrokeTransparency = 0.7
-
 local function createToggle(labelText, yPos, initialState, callback)
     local container = Instance.new("Frame", controlsFrame)
     container.Size = UDim2.new(1, -20, 0, 40)
     container.Position = UDim2.new(0, 10, 0, yPos)
     container.BackgroundTransparency = 1
-
     local lbl = Instance.new("TextLabel", container)
     lbl.Size = UDim2.new(0.65, 0, 1, 0)
     lbl.BackgroundTransparency = 1
@@ -203,7 +181,6 @@ local function createToggle(labelText, yPos, initialState, callback)
     lbl.Font = Enum.Font.GothamSemibold
     lbl.TextSize = 18
     lbl.TextXAlignment = Enum.TextXAlignment.Left
-
     local toggleBtn = Instance.new("TextButton", container)
     toggleBtn.Size = UDim2.new(0.3, 0, 0.8, 0)
     toggleBtn.Position = UDim2.new(0.68, 0, 0.1, 0)
@@ -213,7 +190,6 @@ local function createToggle(labelText, yPos, initialState, callback)
     toggleBtn.Font = Enum.Font.GothamBold
     toggleBtn.TextSize = 16
     Instance.new("UICorner", toggleBtn).CornerRadius = UDim.new(0, 8)
-
     toggleBtn.MouseButton1Click:Connect(function()
         initialState = not initialState
         toggleBtn.BackgroundColor3 = initialState and Color3.fromRGB(0, 180, 0) or Color3.fromRGB(180, 0, 0)
@@ -221,7 +197,6 @@ local function createToggle(labelText, yPos, initialState, callback)
         callback(initialState)
     end)
 end
-
 createToggle("Sun Orb", 60, sunOrbEnabled, function(state)
     sunOrbEnabled = state
     if sunOrb then
@@ -229,19 +204,15 @@ createToggle("Sun Orb", 60, sunOrbEnabled, function(state)
         if sunFireParticles then sunFireParticles.Enabled = state end
     end
 end)
-
 createToggle("Dash Trail", 110, dashTrailEnabled, function(state)
     dashTrailEnabled = state
 end)
-
 createToggle("Camera Shake", 160, cameraShakeEnabled, function(state)
     cameraShakeEnabled = state
 end)
-
 createToggle("Character Shake", 210, charShakeEnabled, function(state)
     charShakeEnabled = state
 end)
-
 local closeHint = Instance.new("TextLabel", controlsFrame)
 closeHint.Size = UDim2.new(1,-20,0,30)
 closeHint.Position = UDim2.new(0,10,1,-40)
@@ -250,23 +221,19 @@ closeHint.Text = "Press C to open/close"
 closeHint.TextColor3 = Color3.fromRGB(60,60,60)
 closeHint.Font = Enum.Font.Gotham
 closeHint.TextSize = 14
-
 controlsFrame.Active = true
 controlsFrame.Draggable = true
-
 UserInputService.InputBegan:Connect(function(input, gp)
     if gp then return end
     if input.KeyCode == Enum.KeyCode.C then
         controlsGui.Enabled = not controlsGui.Enabled
     end
 end)
-
 -- SUN GOD TITLE ──────────────────────────────────────────────────────────────────
 local function createSunGodTitle(char)
     if titleBillboard then titleBillboard:Destroy() end
     local head = char:FindFirstChild("Head")
     if not head then return end
-
     local ad = Instance.new("BillboardGui")
     ad.Name = "SunGodTitle"
     ad.Adornee = head
@@ -276,7 +243,6 @@ local function createSunGodTitle(char)
     ad.LightInfluence = 0
     ad.MaxDistance = 2000
     ad.Parent = head
-
     local text = Instance.new("TextLabel", ad)
     text.Size = UDim2.new(1,0,1,0)
     text.BackgroundTransparency = 1
@@ -286,20 +252,16 @@ local function createSunGodTitle(char)
     text.TextStrokeTransparency = 0.3
     text.Font = Enum.Font.Arcade
     text.TextSize = 72
-
     TweenService:Create(text, TweenInfo.new(1.8, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut, -1, true), {
         TextTransparency = 0.15
     }):Play()
-
     titleBillboard = ad
 end
-
 -- SUN ORB (fixed close normal position) ─────────────────────────────────────────
 local function createSunOrb(hrp)
     if not sunOrbEnabled then return end
     if sunOrb then sunOrb:Destroy() end
     if not hrp or not hrp.Parent then return end
-
     sunOrb = Instance.new("Part")
     sunOrb.Name = "SunOrb"
     sunOrb.Shape = Enum.PartType.Ball
@@ -311,12 +273,10 @@ local function createSunOrb(hrp)
     sunOrb.Transparency = 0.2
     sunOrb.Position = hrp.Position + Vector3.new(0,-10,0)
     sunOrb.Parent = workspace
-
     local sunLight = Instance.new("PointLight", sunOrb)
     sunLight.Brightness = 4.5
     sunLight.Range = 28
     sunLight.Color = SUN_COLOR
-
     sunFireParticles = Instance.new("ParticleEmitter", sunOrb)
     sunFireParticles.Texture = SUN_FIRE_TEXTURE
     sunFireParticles.Color = ColorSequence.new{
@@ -333,37 +293,43 @@ local function createSunOrb(hrp)
     sunFireParticles.LightEmission = 1
     sunFireParticles.Transparency = NumberSequence.new{NumberSequenceKeypoint.new(0,0.1), NumberSequenceKeypoint.new(1,1)}
     sunFireParticles.Enabled = true
-
     TweenService:Create(sunOrb, TweenInfo.new(SUN_SUMMON_TIME, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
         Size = Vector3.new(SUN_SIZE,SUN_SIZE,SUN_SIZE),
         Position = hrp.Position + hrp.CFrame.LookVector * -BEHIND_DISTANCE + Vector3.new(0,5,0)
     }):Play()
-
     task.delay(SUN_SUMMON_TIME - 0.2, function()
         if sunFireParticles and sunOrbEnabled then sunFireParticles:Emit(70) end
     end)
-
     if sunConnection then sunConnection:Disconnect() end
-
     sunConnection = RunService.Heartbeat:Connect(function()
         if not sunOrbEnabled or not sunOrb or not hrp or not hrp.Parent then return end
-
         local t = tick()
         local center = hrp.Position + Vector3.new(0, ORBIT_HEIGHT, 0)
         local targetOffset
-
         local pulse = 1 + (math.sin(t * PULSE_SPEED * math.pi * 2) * 0.5 + 0.5) * (PULSE_MAX - PULSE_MIN) * 0.5
         local aliveJitter = Vector3.new(
             math.noise(t*3.7)*0.6,
             math.noise(t*4.1)*0.8,
             math.noise(t*3.3)*0.6
         )
-
         if isCharging then
-            -- Orbit during charge
-            local angle = t * ORBIT_SPEED
-            local x = math.cos(angle) * ORBIT_RADIUS
-            local z = math.sin(angle) * ORBIT_RADIUS
+            -- Elliptical orbit during charge
+            local angle = t * ORBIT_SPEED   -- still spins at same angular speed
+
+            -- Parametric equations for ellipse (centered at geometric center)
+            local x_ellipse = ORBIT_MAJOR_AXIS * math.cos(angle)
+            local z_ellipse = ORBIT_MINOR_AXIS * math.sin(angle)
+
+            -- Rotate the ellipse if you want it tilted
+            local cosRot = math.cos(ELLIPSE_ROTATION)
+            local sinRot = math.sin(ELLIPSE_ROTATION)
+            local x_rot = x_ellipse * cosRot - z_ellipse * sinRot
+            local z_rot = x_ellipse * sinRot + z_ellipse * cosRot
+
+            -- Shift so one focus is near the player (Earth at focus, not center)
+            local x = x_rot + FOCUS_OFFSET   -- push along major axis so closest point gets closer
+            local z = z_rot
+
             local yBob = math.sin(t * ORBIT_BOB_FREQ * math.pi * 2) * ORBIT_BOB_AMP
             targetOffset = Vector3.new(x, yBob, z) + aliveJitter
 
@@ -375,9 +341,7 @@ local function createSunOrb(hrp)
             local swayX = math.sin(t * SWAY_FREQ) * SWAY_AMP
             local swayZ = math.cos(t * SWAY_FREQ * 0.8) * SWAY_AMP * 0.7
             local bob = math.sin(t * SUN_BOB_FREQUENCY * math.pi * 2) * SUN_BOB_AMPLITUDE
-
             targetOffset = behindDir + Vector3.new(swayX, 10 + bob, swayZ) + aliveJitter
-
             -- Smooth transition back after charge
             if wasChargingLastFrame then
                 local elapsed = t - transitionStartTime
@@ -390,30 +354,22 @@ local function createSunOrb(hrp)
                 end
             end
         end
-
         local targetPos = center + targetOffset
         sunOrb.Position = sunOrb.Position:Lerp(targetPos, 0.14)
-
         local lookAt = center + Vector3.new(0, 2, 0)
         local baseCFrame = CFrame.lookAt(sunOrb.Position, lookAt)
         sunOrb.CFrame = baseCFrame * CFrame.Angles(0, t * SWAY_ROT_SPEED, math.sin(t*1.8)*0.12)
-
         local targetSize = Vector3.new(SUN_SIZE, SUN_SIZE, SUN_SIZE) * pulse
         sunOrb.Size = sunOrb.Size:Lerp(targetSize, 0.08)
     end)
 end
-
--- (the rest of helpers, dash, punch, charge, no fall damage, initCharacter, input, etc. stay exactly the same as previous full version)
-
 -- HELPERS
 local function updateDashGUI()
     dashFill:TweenSize(UDim2.new(dashCount/MAX_DASHES, 0, 1, 0), "Out", "Quad", 0.5, true)
 end
-
 local function updateChargeGUI()
     chargeFill:TweenSize(UDim2.new(isCharging and 1 or 0, 0, 1, 0), "Out", "Quad", 2, true)
 end
-
 local function loadAnim(humanoid, id, loop, priority)
     local anim = Instance.new("Animation")
     anim.AnimationId = id
@@ -422,7 +378,6 @@ local function loadAnim(humanoid, id, loop, priority)
     track.Priority = priority or Enum.AnimationPriority.Action
     return track
 end
-
 local function playExclusive(track, fadeTime, speed)
     if not track then return end
     for _, t in pairs(tracks) do
@@ -432,7 +387,6 @@ local function playExclusive(track, fadeTime, speed)
     end
     pcall(track.Play, track, fadeTime or 0.1, 1, speed or 1)
 end
-
 local function createDashTrail(hrp)
     local trail = Instance.new("Trail")
     local att0 = Instance.new("Attachment", hrp) att0.Position = Vector3.new(0,5,0)
@@ -451,7 +405,6 @@ local function createDashTrail(hrp)
     trail.Parent = hrp
     task.delay(0.3, function() trail:Destroy() end)
 end
-
 local function dash(hrp, humanoid)
     if dashOnCooldown or dashCount <= 0 or isCharging then return false end
     dashOnCooldown = true
@@ -460,15 +413,12 @@ local function dash(hrp, humanoid)
     isDashing = true
     if tracks.dash then tracks.dash:Play(0.1, 1, 1.2) end
     humanoid.AutoRotate = false
-
     local currentY = hrp.AssemblyLinearVelocity.Y
     local bv = Instance.new("BodyVelocity")
     bv.MaxForce = Vector3.new(1e5,1e5,1e5)
     bv.Velocity = hrp.CFrame.LookVector * DASH_FORCE + Vector3.new(0,currentY,0)
     bv.Parent = hrp
-
     if dashTrailEnabled then createDashTrail(hrp) end
-
     local sound = Instance.new("Sound")
     sound.SoundId = "rbxassetid://89341763232570"
     sound.Volume = 1
@@ -476,7 +426,6 @@ local function dash(hrp, humanoid)
     sound:Play()
     sound.Ended:Once(function() if sound then sound:Destroy() end end)
     task.delay(5, function() if sound and sound.Parent then sound:Destroy() end end)
-
     task.delay(DASH_TIME, function()
         bv:Destroy()
         humanoid.AutoRotate = true
@@ -485,15 +434,12 @@ local function dash(hrp, humanoid)
     task.delay(DASH_COOLDOWN, function() dashOnCooldown = false end)
     return true
 end
-
 local function punch(character)
     if punchOnCooldown then return end
     punchOnCooldown = true
     local hand = character:FindFirstChild("RightHand") or character:FindFirstChild("Right Arm")
     if not hand then task.delay(PUNCH_COOLDOWN, function() punchOnCooldown = false end) return end
-
     if tracks.punch then tracks.punch:Play(0.2, 1, LONG_PUNCH_SPEED) end
-
     local pe = Instance.new("ParticleEmitter", hand)
     pe.Texture = "rbxasset://textures/whiteCircle.png"
     pe.Color = ColorSequence.new{ColorSequenceKeypoint.new(0, Color3.fromRGB(255,200,0)), ColorSequenceKeypoint.new(1, Color3.fromRGB(255,0,0))}
@@ -508,7 +454,6 @@ local function punch(character)
     task.delay(0.6, function() pe.Enabled = false task.delay(0.3, pe.Destroy, pe) end)
     task.delay(PUNCH_COOLDOWN, function() punchOnCooldown = false end)
 end
-
 -- CHARGE
 local function createLightningBolt(parent)
     local att0 = Instance.new("Attachment", parent) att0.Position = Vector3.new(0,2,0)
@@ -530,7 +475,6 @@ local function createLightningBolt(parent)
     beam.FaceCamera = true
     return {beam=beam, att0=att0, att1=att1}
 end
-
 local function flickerLightning()
     task.spawn(function()
         while isCharging do
@@ -546,7 +490,6 @@ local function flickerLightning()
         end
     end)
 end
-
 local function ringBurstLoop(emitter)
     task.spawn(function()
         while isCharging and emitter do
@@ -555,20 +498,16 @@ local function ringBurstLoop(emitter)
         end
     end)
 end
-
 local function setupCharge(hrp)
     if chargeAttachment then return end
     chargeAttachment = Instance.new("Attachment", hrp)
     chargeAttachment.Position = Vector3.new(0,2,0)
-
     chargeSoundA = Instance.new("Sound", hrp)
     chargeSoundA.SoundId = CHARGE_LOOP_SOUND
     chargeSoundA.Looped = false
     chargeSoundA.Volume = 0
-
     chargeSoundB = chargeSoundA:Clone()
     chargeSoundB.Parent = hrp
-
     chargeParticles = Instance.new("ParticleEmitter", chargeAttachment)
     chargeParticles.Texture = "rbxasset://textures/particles/sparkles.png"
     chargeParticles.Color = ColorSequence.new(Color3.fromRGB(255,255,0))
@@ -581,7 +520,6 @@ local function setupCharge(hrp)
     chargeParticles.LightEmission = 1
     chargeParticles.Transparency = NumberSequence.new{NumberSequenceKeypoint.new(0,0), NumberSequenceKeypoint.new(1,1)}
     chargeParticles.ZOffset = 2
-
     chargeRingParticles = Instance.new("ParticleEmitter", chargeAttachment)
     chargeRingParticles.Texture = "rbxasset://textures/whiteCircle.png"
     chargeRingParticles.Color = ColorSequence.new(Color3.fromRGB(255,255,255))
@@ -590,14 +528,12 @@ local function setupCharge(hrp)
     chargeRingParticles.Rate = 0
     chargeRingParticles.Transparency = NumberSequence.new{NumberSequenceKeypoint.new(0,1), NumberSequenceKeypoint.new(0.2,0), NumberSequenceKeypoint.new(1,1)}
     chargeRingParticles.Orientation = Enum.ParticleOrientation.FacingCamera
-
     chargeYellowRingParticles = chargeRingParticles:Clone()
     chargeYellowRingParticles.Color = ColorSequence.new(Color3.fromRGB(255,255,0))
     chargeYellowRingParticles.Size = NumberSequence.new{NumberSequenceKeypoint.new(0,0), NumberSequenceKeypoint.new(0.3,4), NumberSequenceKeypoint.new(1,8)}
     chargeYellowRingParticles.Lifetime = NumberRange.new(0.8)
     chargeYellowRingParticles.Transparency = NumberSequence.new{NumberSequenceKeypoint.new(0,1), NumberSequenceKeypoint.new(0.3,0.2), NumberSequenceKeypoint.new(1,1)}
     chargeYellowRingParticles.Parent = chargeAttachment
-
     chargeCentralGlow = Instance.new("ParticleEmitter", chargeAttachment)
     chargeCentralGlow.Texture = "rbxasset://textures/whiteCircle.png"
     chargeCentralGlow.Color = ColorSequence.new{ColorSequenceKeypoint.new(0,Color3.fromRGB(255,255,0)), ColorSequenceKeypoint.new(1,Color3.fromRGB(255,200,0))}
@@ -606,12 +542,10 @@ local function setupCharge(hrp)
     chargeCentralGlow.Rate = 0
     chargeCentralGlow.LightEmission = 1
     chargeCentralGlow.Transparency = NumberSequence.new{NumberSequenceKeypoint.new(0,0.5), NumberSequenceKeypoint.new(1,0.5)}
-
     for i = 1, 8 do
         table.insert(lightningBeams, createLightningBolt(hrp))
     end
 end
-
 local function startChargeSoundLoop()
     task.spawn(function()
         while isCharging do
@@ -623,16 +557,13 @@ local function startChargeSoundLoop()
         end
     end)
 end
-
 local function toggleCharge(hrp)
     if not hrp then return end
     local char = hrp.Parent
     local humanoid = char and char:FindFirstChild("Humanoid")
     if not humanoid then return end
-
     setupCharge(hrp)
     isCharging = not isCharging
-
     if isCharging then
         originalWalkSpeed = humanoid.WalkSpeed
         originalAnchored = hrp.Anchored
@@ -646,7 +577,6 @@ local function toggleCharge(hrp)
         ringBurstLoop(chargeRingParticles)
         ringBurstLoop(chargeYellowRingParticles)
         startChargeSoundLoop()
-
         if cameraShakeEnabled then
             if cameraShakeConnection then cameraShakeConnection:Disconnect() end
             cameraShakeConnection = RunService.RenderStepped:Connect(function()
@@ -657,11 +587,9 @@ local function toggleCharge(hrp)
                 camera.CFrame *= CFrame.new(off)
             end)
         end
-
         local baseCFrame = hrp.CFrame
         humanoid.WalkSpeed = 0
         hrp.Anchored = true
-
         if charShakeEnabled then
             if characterShakeConnection then characterShakeConnection:Disconnect() end
             characterShakeConnection = RunService.RenderStepped:Connect(function()
@@ -672,13 +600,11 @@ local function toggleCharge(hrp)
                 hrp.CFrame = baseCFrame * CFrame.new(off)
             end)
         end
-
         local ti = TweenInfo.new(POWERUP_TIME, Enum.EasingStyle.Linear)
         TweenService:Create(chargeSoundA, ti, {Volume = 1}):Play()
         TweenService:Create(chargeSoundB, ti, {Volume = 1}):Play()
         TweenService:Create(chargeParticles, ti, {Rate = 1200}):Play()
         TweenService:Create(chargeCentralGlow, ti, {Rate = 10}):Play()
-
         if dashCount < MAX_DASHES and nextRechargeTime == math.huge then
             nextRechargeTime = tick() + rechargeInterval
         end
@@ -696,7 +622,6 @@ local function toggleCharge(hrp)
         chargeSoundB:Stop() chargeSoundB.Volume = 0
         if tracks.charge then pcall(tracks.charge.Stop, tracks.charge, 0.15) end
         playExclusive(tracks.idle)
-
         -- RETURN SOUND
         local returnSound = Instance.new("Sound")
         returnSound.SoundId = CHARGE_RETURN_SOUND
@@ -704,7 +629,6 @@ local function toggleCharge(hrp)
         returnSound.Parent = hrp
         returnSound:Play()
         Debris:AddItem(returnSound, 4)
-
         task.delay(0.05, function()
             if humanoid then
                 humanoid:ChangeState(Enum.HumanoidStateType.GettingUp)
@@ -713,17 +637,14 @@ local function toggleCharge(hrp)
             end
         end)
     end
-
     updateChargeGUI()
 end
-
 -- NO FALL DAMAGE
 local function enableNoFallDamage(char)
     if noFallConnection then noFallConnection:Disconnect() end
     local humanoid = char:WaitForChild("Humanoid", 5)
     local root = char:WaitForChild("HumanoidRootPart", 5)
     if not humanoid or not root then return end
-
     noFallConnection = RunService.Heartbeat:Connect(function()
         if humanoid:GetState() == Enum.HumanoidStateType.Freefall
         or humanoid:GetState() == Enum.HumanoidStateType.FallingDown then
@@ -739,7 +660,6 @@ local function enableNoFallDamage(char)
             end
         end
     end)
-
     local landedConn = humanoid.StateChanged:Connect(function(old, new)
         if new == Enum.HumanoidStateType.Landed
         and (old == Enum.HumanoidStateType.Freefall or old == Enum.HumanoidStateType.FallingDown) then
@@ -754,26 +674,21 @@ local function enableNoFallDamage(char)
             end
         end
     end)
-
     char.AncestryChanged:Connect(function()
         if landedConn then landedConn:Disconnect() end
     end)
 end
-
 -- CHARACTER INIT
 local function initCharacter(char)
     for _, conn in {runningConnection, noFallConnection, rechargeConnection, cameraShakeConnection, characterShakeConnection, jumpConnection, sunConnection} do
         if conn then conn:Disconnect() end
     end
-
     for _, t in pairs(tracks) do if t and t.Stop then pcall(t.Stop, t) end end
     tracks = {}
-
     isDashing = false
     isCharging = false
     dashCount = MAX_DASHES
     nextRechargeTime = math.huge
-
     if chargeAttachment then chargeAttachment:Destroy() chargeAttachment = nil end
     for _, b in ipairs(lightningBeams) do
         if b.att0 then b.att0:Destroy() end
@@ -781,25 +696,19 @@ local function initCharacter(char)
         if b.beam then b.beam:Destroy() end
     end
     lightningBeams = {}
-
     if sunOrb then sunOrb:Destroy() sunOrb = nil end
-
     updateDashGUI()
     updateChargeGUI()
-
     local humanoid = char:WaitForChild("Humanoid", 8)
     local hrp = char:WaitForChild("HumanoidRootPart", 8)
     if not humanoid or not hrp then return end
-
     tracks.idle = loadAnim(humanoid, ANIMATIONS.idle, true)
     tracks.walk = loadAnim(humanoid, ANIMATIONS.walk, true)
     tracks.jump = loadAnim(humanoid, ANIMATIONS.jump, false)
     tracks.dash = loadAnim(humanoid, ANIMATIONS.dash, false, Enum.AnimationPriority.Action4)
     tracks.punch = loadAnim(humanoid, ANIMATIONS.punch, false, Enum.AnimationPriority.Action4)
     tracks.charge = loadAnim(humanoid, ANIMATIONS.charge, true, Enum.AnimationPriority.Action4)
-
     if tracks.idle then tracks.idle:Play() end
-
     runningConnection = humanoid.Running:Connect(function(speed)
         if isDashing or isCharging then return end
         if speed > 0.1 then
@@ -808,13 +717,11 @@ local function initCharacter(char)
             playExclusive(tracks.idle)
         end
     end)
-
     jumpConnection = humanoid.StateChanged:Connect(function(_, new)
         if new == Enum.HumanoidStateType.Jumping and not isDashing and not isCharging then
             playExclusive(tracks.jump, 0.1, 1)
         end
     end)
-
     rechargeConnection = RunService.Heartbeat:Connect(function()
         if isCharging and dashCount < MAX_DASHES and tick() >= nextRechargeTime then
             dashCount = math.min(dashCount + 1, MAX_DASHES)
@@ -822,20 +729,16 @@ local function initCharacter(char)
             nextRechargeTime = tick() + rechargeInterval
         end
     end)
-
     enableNoFallDamage(char)
     createSunGodTitle(char)
-
     task.delay(0.4, function()
         if hrp and hrp.Parent then createSunOrb(hrp) end
     end)
 end
-
 -- START
 local char = lp.Character or lp.CharacterAdded:Wait()
 initCharacter(char)
 lp.CharacterAdded:Connect(initCharacter)
-
 -- INPUT
 UserInputService.InputBegan:Connect(function(input, gp)
     if gp then return end
@@ -844,13 +747,11 @@ UserInputService.InputBegan:Connect(function(input, gp)
     local humanoid = char:FindFirstChild("Humanoid")
     local hrp = char:FindFirstChild("HumanoidRootPart")
     if not humanoid or not hrp then return end
-
     if input.UserInputType == Enum.UserInputType.MouseButton1 then
         if isCharging then return end
         local didDash = dash(hrp, humanoid)
         if didDash then punch(char) end
     end
-
     if input.KeyCode == Enum.KeyCode.Z then
         toggleCharge(hrp)
     end
