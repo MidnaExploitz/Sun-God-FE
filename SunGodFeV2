@@ -24,9 +24,7 @@ local ANIM = {
 
 --// TUNING
 local CFG = {
-    -- Walk
     walkSpeed       = 1.1,
-    -- Dash (now longer + FASTER per phase)
     dashForce       = 165,
     dashForcePhase2 = 182,
     dashForcePhase3 = 198,
@@ -40,29 +38,23 @@ local CFG = {
     dashCooldown    = 2.3,
     maxDashes       = 5,
     dashRecharge    = 12,
-    -- Phase upgrades
     maxDashesPhase4     = 9,
     dashRechargePhase4  = 28,
     maxDashesPhase5     = 20,
     dashRechargePhase5  = 80,
-    -- Phase 2 random
     phase2RandomMin     = 4,
     phase2RandomMax     = 18,
-    -- Punch
     punchCooldown   = 2.3,
     punchSound      = "rbxassetid://131057517",
-    -- Charge
     chargeLength    = 0.91,
     crossfade       = 0.03,
     powerupTime     = 4.5,
-    -- Sun orb
     sunSize         = 11,
     sunColor        = Color3.fromRGB(255, 165, 0),
     sunMaterial     = Enum.Material.Neon,
     sunBobAmp       = 2,
     sunBobFreq      = 2,
     sunSummonTime   = 1.0,
-    -- Orbit
     orbitRadius       = 18,
     orbitRadiusPhase2 = 27,
     orbitRadiusPhase3 = 34,
@@ -73,7 +65,6 @@ local CFG = {
     orbitBobAmp       = 2.1,
     orbitBobFreq      = 2.3,
     orbitEccentricity = 0.35,
-    -- Normal follow
     behindDist      = 13,
     swayAmp         = 1.8,
     swayFreq        = 1.1,
@@ -82,15 +73,12 @@ local CFG = {
     pulseMin        = 0.94,
     pulseMax        = 1.08,
     pulseSpeed      = 1.4,
-    -- Phase timing
     phase3ToPhase4Time = 12,
     phase4ToPhase5Time = 16,
-    -- Phase 5
     phase5FloatHeight  = 12,
     phase5FloatSpeed   = 0.045,
     phase5Duration     = 65,
     phase5PassiveRecharge = 10,
-    -- Sounds
     chargeLoopSound  = "rbxassetid://84700238102918",
     chargeReturnSound= "rbxassetid://74424239140462",
     dashSound        = "rbxassetid://89341763232570",
@@ -105,13 +93,99 @@ local toggles = {
     music       = true,
 }
 
---// PHASE NAMES
+--// PHASE NAMES (upgraded)
 local PHASE_NAMES = {
-    [1] = "☀  Sun God",
-    [2] = "🔥  Blazing Sun",
-    [3] = "🌊  Azure Sun",
-    [4] = "🌌  Super Nova Creation",
-    [5] = "🌟  Divine Sun",
+    [1] = "☀  Eternal Sovereign",
+    [2] = "🔥  Inferno Awakening",
+    [3] = "🌊  Celestial Tide",
+    [4] = "🌌  Void Singularity",
+    [5] = "✦  Divine Transcendence",
+}
+
+--// PHASE ROMAN NUMERALS (for subtitle)
+local PHASE_ROMAN = {
+    [1] = "P H A S E   I",
+    [2] = "P H A S E   I I",
+    [3] = "P H A S E   I I I",
+    [4] = "P H A S E   I V",
+    [5] = "P H A S E   V",
+}
+
+--// TITLE GUI COLORS (per phase)
+local PHASE_TITLE_COLOR = {
+    [1] = Color3.fromRGB(255, 215,   0),
+    [2] = Color3.fromRGB(255, 120,  20),
+    [3] = Color3.fromRGB( 80, 210, 255),
+    [4] = Color3.fromRGB(210,  50, 255),
+    [5] = Color3.fromRGB(230, 245, 255),
+}
+local PHASE_STROKE_COLOR = {
+    [1] = Color3.fromRGB(255, 100,   0),
+    [2] = Color3.fromRGB(200,  40,   0),
+    [3] = Color3.fromRGB( 40, 140, 255),
+    [4] = Color3.fromRGB(140,   0, 200),
+    [5] = Color3.fromRGB(160, 200, 255),
+}
+local PHASE_BORDER_COLOR = {
+    [1] = Color3.fromRGB(255, 215,   0),
+    [2] = Color3.fromRGB(255,  90,   0),
+    [3] = Color3.fromRGB(  0, 180, 255),
+    [4] = Color3.fromRGB(200,   0, 255),
+    [5] = Color3.fromRGB(200, 230, 255),
+}
+local PHASE_SHIMMER_COLOR = {
+    [1] = Color3.fromRGB(255, 255, 180),
+    [2] = Color3.fromRGB(255, 200, 100),
+    [3] = Color3.fromRGB(160, 240, 255),
+    [4] = Color3.fromRGB(255, 160, 255),
+    [5] = Color3.fromRGB(255, 255, 255),
+}
+
+--// BOLT COLORS (per phase)
+local BOLT_COLORS = {
+    [1] = { Color3.fromRGB(255, 240,  80), Color3.fromRGB(255, 180,   0) },
+    [2] = { Color3.fromRGB(255, 140,  50), Color3.fromRGB(200,  45,   0) },
+    [3] = { Color3.fromRGB(100, 220, 255), Color3.fromRGB( 30, 140, 255) },
+    [4] = { Color3.fromRGB(255, 100, 255), Color3.fromRGB(140,   0, 255) },
+    [5] = { Color3.fromRGB(255, 255, 255), Color3.fromRGB(180, 210, 255) },
+}
+
+--// DASH TRAIL COLORS (per phase)
+local DASH_TRAIL_COLORS = {
+    [1] = ColorSequence.new{
+        ColorSequenceKeypoint.new(0,   Color3.fromRGB(255, 255,  80)),
+        ColorSequenceKeypoint.new(0.5, Color3.fromRGB(255, 190,   0)),
+        ColorSequenceKeypoint.new(1,   Color3.fromRGB(255,  40,   0)),
+    },
+    [2] = ColorSequence.new{
+        ColorSequenceKeypoint.new(0,   Color3.fromRGB(255, 160,  40)),
+        ColorSequenceKeypoint.new(0.5, Color3.fromRGB(255,  80,   0)),
+        ColorSequenceKeypoint.new(1,   Color3.fromRGB(180,  20,   0)),
+    },
+    [3] = ColorSequence.new{
+        ColorSequenceKeypoint.new(0,   Color3.fromRGB( 80, 200, 255)),
+        ColorSequenceKeypoint.new(0.5, Color3.fromRGB(140, 220, 255)),
+        ColorSequenceKeypoint.new(1,   Color3.fromRGB(200, 240, 255)),
+    },
+    [4] = ColorSequence.new{
+        ColorSequenceKeypoint.new(0,   Color3.fromRGB(255, 100, 255)),
+        ColorSequenceKeypoint.new(0.5, Color3.fromRGB(200,  40, 255)),
+        ColorSequenceKeypoint.new(1,   Color3.fromRGB(120,   0, 200)),
+    },
+    [5] = ColorSequence.new{
+        ColorSequenceKeypoint.new(0,   Color3.fromRGB(255, 255, 255)),
+        ColorSequenceKeypoint.new(0.5, Color3.fromRGB(210, 235, 255)),
+        ColorSequenceKeypoint.new(1,   Color3.fromRGB(160, 200, 255)),
+    },
+}
+
+--// DASH BALL PARTICLE COLORS (per phase)
+local DASH_BALL_COLORS = {
+    [1] = { Color3.fromRGB(255, 240,  80), Color3.fromRGB(255, 160,   0), Color3.fromRGB(200,  50,   0) },
+    [2] = { Color3.fromRGB(255, 160,  40), Color3.fromRGB(220,  70,   0), Color3.fromRGB(160,  20,   0) },
+    [3] = { Color3.fromRGB( 80, 220, 255), Color3.fromRGB( 40, 160, 255), Color3.fromRGB( 20, 100, 220) },
+    [4] = { Color3.fromRGB(255, 120, 255), Color3.fromRGB(200,  40, 255), Color3.fromRGB(120,   0, 200) },
+    [5] = { Color3.fromRGB(255, 255, 255), Color3.fromRGB(210, 235, 255), Color3.fromRGB(170, 210, 255) },
 }
 
 --// STATE
@@ -138,7 +212,7 @@ local rechargeInterval      = CFG.dashRecharge / CFG.maxDashes
 local originalWalkSpeed = 16
 local originalAnchored  = false
 
-local sunOrb, sunFire
+local sunOrb, sunFire, sunInnerSpark, sunEmbers
 local sunConn
 local transitionStart    = 0
 local wasChargingLast    = false
@@ -150,14 +224,20 @@ local lightningBeams = {}
 local titleBillboard
 local titleTextLabel
 
+-- Separate table to hold title GUI sub-references (avoids Roblox Instance property issues)
+local titleRefs = {
+    stroke      = nil,
+    phaseLabel  = nil,
+    shimmer     = nil,
+}
+
 local chargeBaseCF
 local connections = {}
 
 local musicSound
 local phase2RandomTriggerTime = 0
 
--- Persistent sun color
-local persistentSunColor = CFG.sunColor
+local persistentSunColor  = CFG.sunColor
 local persistentLightColor = CFG.sunColor
 
 --// SCREEN FLASH
@@ -210,15 +290,19 @@ local function disconnectAll(tbl)
     end
 end
 
---// LIGHTNING BOLT
+--// LIGHTNING BOLT (uses current chargePhase for colors)
 local function makeBolt(hrp)
+    local cols = BOLT_COLORS[chargePhase] or BOLT_COLORS[1]
     local a0 = Instance.new("Attachment", hrp); a0.Position = Vector3.new(0, 2, 0)
     local a1 = Instance.new("Attachment", hrp)
     a1.Position = Vector3.new(math.random(-8, 8), math.random(-5, 10), math.random(-8, 8))
     local beam = Instance.new("Beam", hrp)
     beam.Attachment0   = a0
     beam.Attachment1   = a1
-    beam.Color         = ColorSequence.new{ ColorSequenceKeypoint.new(0, Color3.new(1,1,0)), ColorSequenceKeypoint.new(1, Color3.new(1,0.8,0)) }
+    beam.Color         = ColorSequence.new{
+        ColorSequenceKeypoint.new(0, cols[1]),
+        ColorSequenceKeypoint.new(1, cols[2]),
+    }
     beam.Width0, beam.Width1 = 0.45, 0.10
     beam.Transparency  = NumberSequence.new(0.2)
     beam.LightEmission = 1
@@ -231,75 +315,135 @@ local function makeBolt(hrp)
     return { beam = beam, a0 = a0, a1 = a1 }
 end
 
---// DYNAMIC SUN GOD TITLE
+--// DYNAMIC SUN GOD TITLE (new 10x better version)
 local function updateSunGodTitle(phase)
     if not titleTextLabel or not titleTextLabel.Parent then return end
-    local name = PHASE_NAMES[phase] or PHASE_NAMES[1]
-    titleTextLabel.Text = name
+    titleTextLabel.Text = PHASE_NAMES[phase] or PHASE_NAMES[1]
 
-    if phase == 5 then
-        titleTextLabel.TextColor3 = Color3.fromRGB(255, 255, 240)
-        titleTextLabel.TextStrokeColor3 = Color3.fromRGB(180, 220, 255)
-        titleTextLabel.TextStrokeTransparency = 0.1
-        titleTextLabel.TextSize = 78
-    elseif phase == 4 then
-        titleTextLabel.TextColor3 = Color3.fromRGB(200, 50, 255)
-        titleTextLabel.TextStrokeColor3 = Color3.fromRGB(120, 0, 200)
-        titleTextLabel.TextStrokeTransparency = 0.15
-        titleTextLabel.TextSize = 76
-    elseif phase == 3 then
-        titleTextLabel.TextColor3 = Color3.fromRGB(100, 220, 255)
-        titleTextLabel.TextStrokeColor3 = Color3.fromRGB(80, 140, 255)
-        titleTextLabel.TextSize = 72
-    elseif phase == 2 then
-        titleTextLabel.TextColor3 = Color3.fromRGB(255, 110, 30)
-        titleTextLabel.TextStrokeColor3 = Color3.fromRGB(200, 50, 0)
-        titleTextLabel.TextSize = 72
-    else
-        titleTextLabel.TextColor3 = Color3.fromRGB(255, 215, 0)
-        titleTextLabel.TextStrokeColor3 = Color3.fromRGB(255, 120, 0)
-        titleTextLabel.TextStrokeTransparency = 0.3
-        titleTextLabel.TextSize = 72
+    local tc = PHASE_TITLE_COLOR[phase]  or PHASE_TITLE_COLOR[1]
+    local sc = PHASE_STROKE_COLOR[phase] or PHASE_STROKE_COLOR[1]
+
+    TweenService:Create(titleTextLabel, TweenInfo.new(0.5, Enum.EasingStyle.Quad), {
+        TextColor3       = tc,
+        TextStrokeColor3 = sc,
+    }):Play()
+
+    if titleRefs.stroke then
+        TweenService:Create(titleRefs.stroke, TweenInfo.new(0.5, Enum.EasingStyle.Quad), {
+            Color = PHASE_BORDER_COLOR[phase] or PHASE_BORDER_COLOR[1],
+        }):Play()
+    end
+    if titleRefs.phaseLabel then
+        titleRefs.phaseLabel.Text = PHASE_ROMAN[phase] or PHASE_ROMAN[1]
+        TweenService:Create(titleRefs.phaseLabel, TweenInfo.new(0.5), { TextColor3 = tc }):Play()
+    end
+    if titleRefs.shimmer then
+        TweenService:Create(titleRefs.shimmer, TweenInfo.new(0.5), {
+            BackgroundColor3 = PHASE_SHIMMER_COLOR[phase] or PHASE_SHIMMER_COLOR[1],
+        }):Play()
     end
 end
 
 local function createTitle(char)
     if titleBillboard then titleBillboard:Destroy() end
+    -- Clear old refs
+    titleRefs.stroke     = nil
+    titleRefs.phaseLabel = nil
+    titleRefs.shimmer    = nil
+
     local head = char:FindFirstChild("Head")
     if not head then return end
+
     local bb = Instance.new("BillboardGui")
-    bb.Name        = "SunGodTitle"
-    bb.Adornee     = head
-    bb.Size        = UDim2.new(8, 0, 2.5, 0)
-    bb.StudsOffset = Vector3.new(0, 4, 0)
-    bb.AlwaysOnTop = true
+    bb.Name           = "SunGodTitle"
+    bb.Adornee        = head
+    bb.Size           = UDim2.new(0, 440, 0, 110)
+    bb.StudsOffset    = Vector3.new(0, 5.5, 0)
+    bb.AlwaysOnTop    = true
     bb.LightInfluence = 0
-    bb.MaxDistance = 2000
-    bb.Parent      = head
+    bb.MaxDistance    = 2000
+    bb.Parent         = head
+
+    -- Dark backing panel
+    local backing = Instance.new("Frame", bb)
+    backing.Size                   = UDim2.new(1, 0, 1, 0)
+    backing.BackgroundColor3       = Color3.fromRGB(5, 4, 10)
+    backing.BackgroundTransparency = 0.28
+    backing.BorderSizePixel        = 0
+    Instance.new("UICorner", backing).CornerRadius = UDim.new(0, 16)
+
+    -- Neon border stroke
+    local stroke = Instance.new("UIStroke", backing)
+    stroke.Color           = Color3.fromRGB(255, 215, 0)
+    stroke.Thickness       = 2.5
+    stroke.Transparency    = 0.1
+    stroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+    titleRefs.stroke = stroke
+
+    -- Top shimmer line
+    local shimmer = Instance.new("Frame", backing)
+    shimmer.Size                   = UDim2.new(0.85, 0, 0, 2)
+    shimmer.Position               = UDim2.new(0.075, 0, 0, 7)
+    shimmer.BackgroundColor3       = Color3.fromRGB(255, 255, 180)
+    shimmer.BackgroundTransparency = 0.3
+    shimmer.BorderSizePixel        = 0
+    Instance.new("UICorner", shimmer).CornerRadius = UDim.new(1, 0)
+    titleRefs.shimmer = shimmer
+
+    -- Phase label (small caps)
+    local phaseLabel = Instance.new("TextLabel", bb)
+    phaseLabel.Size                   = UDim2.new(1, 0, 0, 28)
+    phaseLabel.Position               = UDim2.new(0, 0, 0, 10)
+    phaseLabel.BackgroundTransparency = 1
+    phaseLabel.Text                   = PHASE_ROMAN[1]
+    phaseLabel.TextColor3             = Color3.fromRGB(255, 215, 0)
+    phaseLabel.TextStrokeColor3       = Color3.fromRGB(180, 80, 0)
+    phaseLabel.TextStrokeTransparency = 0.3
+    phaseLabel.Font                   = Enum.Font.GothamBold
+    phaseLabel.TextSize               = 11
+    phaseLabel.TextTransparency       = 0.05
+    titleRefs.phaseLabel = phaseLabel
+
+    -- Main title
     local txt = Instance.new("TextLabel", bb)
-    txt.Size                 = UDim2.new(1, 0, 1, 0)
+    txt.Size                   = UDim2.new(1, 0, 0, 62)
+    txt.Position               = UDim2.new(0, 0, 0, 34)
     txt.BackgroundTransparency = 1
-    txt.Text                 = PHASE_NAMES[1]
-    txt.TextColor3           = Color3.fromRGB(255, 215, 0)
-    txt.TextStrokeColor3     = Color3.fromRGB(255, 120, 0)
-    txt.TextStrokeTransparency = 0.3
-    txt.Font                 = Enum.Font.Arcade
-    txt.TextSize             = 72
-    TweenService:Create(txt, TweenInfo.new(1.6, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut, -1, true), {
-        TextTransparency = 0.18,
-        TextStrokeTransparency = 0.6,
+    txt.Text                   = PHASE_NAMES[1]
+    txt.TextColor3             = Color3.fromRGB(255, 215, 0)
+    txt.TextStrokeColor3       = Color3.fromRGB(255, 100, 0)
+    txt.TextStrokeTransparency = 0.0
+    txt.Font                   = Enum.Font.Arcade
+    txt.TextSize               = 36
+    txt.TextScaled             = false
+
+    -- Glow pulse
+    TweenService:Create(txt, TweenInfo.new(1.4, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut, -1, true), {
+        TextTransparency       = 0.10,
+        TextStrokeTransparency = 0.35,
     }):Play()
+    -- Shimmer pulse
+    TweenService:Create(shimmer, TweenInfo.new(2.2, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut, -1, true), {
+        BackgroundTransparency = 0.78,
+    }):Play()
+
     titleBillboard = bb
     titleTextLabel = txt
 end
 
---// PHASE ENHANCEMENTS (unchanged)
+--// PHASE ENHANCEMENTS
+local function updateOrbParticleColors(fireColors, sparkColors, emberColors)
+    if sunFire       then sunFire.Color       = ColorSequence.new(fireColors)  end
+    if sunInnerSpark then sunInnerSpark.Color  = ColorSequence.new(sparkColors) end
+    if sunEmbers     then sunEmbers.Color      = ColorSequence.new(emberColors) end
+end
+
 local function enterPhase2()
     fullPower = true
     chargePhase = 2
     fullPowerStartTime = tick()
 
-    persistentSunColor = Color3.fromRGB(255, 85, 0)
+    persistentSunColor  = Color3.fromRGB(255, 85, 0)
     persistentLightColor = Color3.fromRGB(255, 85, 0)
 
     if sunOrb then
@@ -310,9 +454,14 @@ local function enterPhase2()
             sunFire.Color = ColorSequence.new{
                 ColorSequenceKeypoint.new(0,   Color3.fromRGB(255, 140, 50)),
                 ColorSequenceKeypoint.new(0.4, Color3.fromRGB(255, 100, 30)),
-                ColorSequenceKeypoint.new(1,   Color3.fromRGB(200, 45, 0)),
+                ColorSequenceKeypoint.new(1,   Color3.fromRGB(200, 45,  0)),
             }
         end
+        updateOrbParticleColors(
+            { ColorSequenceKeypoint.new(0, Color3.fromRGB(255,140,50)), ColorSequenceKeypoint.new(0.4, Color3.fromRGB(255,100,30)), ColorSequenceKeypoint.new(1, Color3.fromRGB(200,45,0)) },
+            { ColorSequenceKeypoint.new(0, Color3.fromRGB(255,200,100)), ColorSequenceKeypoint.new(1, Color3.fromRGB(255,80,0)) },
+            { ColorSequenceKeypoint.new(0, Color3.fromRGB(255,160,40)), ColorSequenceKeypoint.new(0.5, Color3.fromRGB(220,80,0)), ColorSequenceKeypoint.new(1, Color3.fromRGB(160,20,0)) }
+        )
     end
 
     if tracks.charge and tracks.charge.IsPlaying then tracks.charge:Stop(0.12) end
@@ -334,14 +483,16 @@ local function enterPhase2()
     if ringParticles then ringParticles:Emit(8) end
     if yellowRingParticles then yellowRingParticles:Emit(6) end
 
+    -- Update existing bolts to phase 2 colors
+    local cols2 = BOLT_COLORS[2]
     for _, b in ipairs(lightningBeams) do
         if b.beam then
             b.beam.Width0 = 0.95
             b.beam.Width1 = 0.28
             b.beam.LightEmission = 1.3
             b.beam.Color = ColorSequence.new{
-                ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 140, 50)),
-                ColorSequenceKeypoint.new(1, Color3.fromRGB(200, 45, 0)),
+                ColorSequenceKeypoint.new(0, cols2[1]),
+                ColorSequenceKeypoint.new(1, cols2[2]),
             }
         end
     end
@@ -355,10 +506,6 @@ local function enterPhase2()
                 b.beam.Width0 = 0.95
                 b.beam.Width1 = 0.28
                 b.beam.LightEmission = 1.3
-                b.beam.Color = ColorSequence.new{
-                    ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 140, 50)),
-                    ColorSequenceKeypoint.new(1, Color3.fromRGB(200, 45, 0)),
-                }
             end
             table.insert(lightningBeams, b)
         end
@@ -375,7 +522,7 @@ local function enterPhase3()
     if tracks.fullCharge and tracks.fullCharge.IsPlaying then tracks.fullCharge:Stop(0.1) end
     if tracks.ultraCharge then tracks.ultraCharge:Play(0.15, 1, 1.25) end
 
-    persistentSunColor = Color3.fromRGB(80, 200, 255)
+    persistentSunColor  = Color3.fromRGB(80, 200, 255)
     persistentLightColor = Color3.fromRGB(80, 200, 255)
 
     if sunOrb then
@@ -385,14 +532,33 @@ local function enterPhase3()
         if sunFire then
             sunFire.Color = ColorSequence.new{
                 ColorSequenceKeypoint.new(0,   Color3.fromRGB(100, 220, 255)),
-                ColorSequenceKeypoint.new(0.5, Color3.fromRGB(60, 180, 255)),
-                ColorSequenceKeypoint.new(1,   Color3.fromRGB(20, 140, 255)),
+                ColorSequenceKeypoint.new(0.5, Color3.fromRGB( 60, 180, 255)),
+                ColorSequenceKeypoint.new(1,   Color3.fromRGB( 20, 140, 255)),
+            }
+        end
+        updateOrbParticleColors(
+            { ColorSequenceKeypoint.new(0, Color3.fromRGB(100,220,255)), ColorSequenceKeypoint.new(0.5, Color3.fromRGB(60,180,255)), ColorSequenceKeypoint.new(1, Color3.fromRGB(20,140,255)) },
+            { ColorSequenceKeypoint.new(0, Color3.fromRGB(200,245,255)), ColorSequenceKeypoint.new(1, Color3.fromRGB(60,180,255)) },
+            { ColorSequenceKeypoint.new(0, Color3.fromRGB(180,240,255)), ColorSequenceKeypoint.new(0.5, Color3.fromRGB(60,190,255)), ColorSequenceKeypoint.new(1, Color3.fromRGB(20,120,220)) }
+        )
+    end
+    if chargeSoundA then tw(chargeSoundA, 0.4, { PlaybackSpeed = 0.7, Volume = 2.4 }) end
+    if chargeSoundB then tw(chargeSoundB, 0.4, { PlaybackSpeed = 0.7, Volume = 2.4 }) end
+
+    -- Update existing bolts to phase 3 colors
+    local cols3 = BOLT_COLORS[3]
+    for _, b in ipairs(lightningBeams) do
+        if b.beam then
+            b.beam.Width0 = 2.1
+            b.beam.Width1 = 0.58
+            b.beam.LightEmission = 1.7
+            b.beam.Transparency = NumberSequence.new(0.08)
+            b.beam.Color = ColorSequence.new{
+                ColorSequenceKeypoint.new(0, cols3[1]),
+                ColorSequenceKeypoint.new(1, cols3[2]),
             }
         end
     end
-
-    if chargeSoundA then tw(chargeSoundA, 0.4, { PlaybackSpeed = 0.7, Volume = 2.4 }) end
-    if chargeSoundB then tw(chargeSoundB, 0.4, { PlaybackSpeed = 0.7, Volume = 2.4 }) end
 
     local char3 = lp.Character
     local hrp3  = char3 and char3:FindFirstChild("HumanoidRootPart")
@@ -404,10 +570,6 @@ local function enterPhase3()
                 b.beam.Width1 = 0.58
                 b.beam.LightEmission = 1.7
                 b.beam.Transparency = NumberSequence.new(0.08)
-                b.beam.Color = ColorSequence.new{
-                    ColorSequenceKeypoint.new(0, Color3.fromRGB(180, 255, 255)),
-                    ColorSequenceKeypoint.new(1, Color3.fromRGB(80, 200, 255)),
-                }
             end
             table.insert(lightningBeams, b)
         end
@@ -429,19 +591,6 @@ local function enterPhase3()
     if ringParticles then ringParticles:Emit(40) end
     if yellowRingParticles then yellowRingParticles:Emit(32) end
 
-    for _, b in ipairs(lightningBeams) do
-        if b.beam then
-            b.beam.Width0 = 2.1
-            b.beam.Width1 = 0.58
-            b.beam.LightEmission = 1.7
-            b.beam.Transparency = NumberSequence.new(0.08)
-            b.beam.Color = ColorSequence.new{
-                ColorSequenceKeypoint.new(0, Color3.fromRGB(180, 255, 255)),
-                ColorSequenceKeypoint.new(1, Color3.fromRGB(80, 200, 255)),
-            }
-        end
-    end
-
     updateSunGodTitle(chargePhase)
 end
 
@@ -459,7 +608,7 @@ local function enterPhase4()
         updateDashBar()
     end
 
-    persistentSunColor = Color3.fromRGB(200, 50, 255)
+    persistentSunColor  = Color3.fromRGB(200, 50, 255)
     persistentLightColor = Color3.fromRGB(220, 120, 255)
 
     if sunOrb then
@@ -469,31 +618,37 @@ local function enterPhase4()
         if sunFire then
             sunFire.Color = ColorSequence.new{
                 ColorSequenceKeypoint.new(0,   Color3.fromRGB(255, 120, 255)),
-                ColorSequenceKeypoint.new(0.5, Color3.fromRGB(200, 50, 255)),
-                ColorSequenceKeypoint.new(1,   Color3.fromRGB(140, 0, 255)),
+                ColorSequenceKeypoint.new(0.5, Color3.fromRGB(200,  50, 255)),
+                ColorSequenceKeypoint.new(1,   Color3.fromRGB(140,   0, 255)),
             }
         end
+        updateOrbParticleColors(
+            { ColorSequenceKeypoint.new(0, Color3.fromRGB(255,120,255)), ColorSequenceKeypoint.new(0.5, Color3.fromRGB(200,50,255)), ColorSequenceKeypoint.new(1, Color3.fromRGB(140,0,255)) },
+            { ColorSequenceKeypoint.new(0, Color3.fromRGB(255,200,255)), ColorSequenceKeypoint.new(1, Color3.fromRGB(180,0,255)) },
+            { ColorSequenceKeypoint.new(0, Color3.fromRGB(240,140,255)), ColorSequenceKeypoint.new(0.5, Color3.fromRGB(190,40,255)), ColorSequenceKeypoint.new(1, Color3.fromRGB(120,0,200)) }
+        )
     end
-
     if chargeSoundA then tw(chargeSoundA, 0.3, { Volume = 3.0, PlaybackSpeed = 0.5 }) end
     if chargeSoundB then tw(chargeSoundB, 0.3, { Volume = 3.0, PlaybackSpeed = 0.5 }) end
 
     if tracks.ultraCharge and tracks.ultraCharge.IsPlaying then tracks.ultraCharge:Stop(0.18) end
-    if tracks.superUltraCharge then
-        tracks.superUltraCharge:Play(0.1, 1, 1.5)
-    end
+    if tracks.superUltraCharge then tracks.superUltraCharge:Play(0.1, 1, 1.5) end
 
     screenFlash(255, 255, 255, 0.0, 1.2)
 
     if chargeParticles then
-        chargeParticles.Color = ColorSequence.new(Color3.fromRGB(200, 50, 255))
+        chargeParticles.Color = ColorSequence.new{
+            ColorSequenceKeypoint.new(0,   Color3.fromRGB(255, 120, 255)),
+            ColorSequenceKeypoint.new(0.5, Color3.fromRGB(200,  50, 255)),
+            ColorSequenceKeypoint.new(1,   Color3.fromRGB(140,   0, 255)),
+        }
         TweenService:Create(chargeParticles, TweenInfo.new(0.4), { Rate = 220000 }):Play()
         chargeParticles:Emit(3500)
     end
     if centralGlow then
         centralGlow.Color = ColorSequence.new{
             ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 120, 255)),
-            ColorSequenceKeypoint.new(1, Color3.fromRGB(180, 0, 255)),
+            ColorSequenceKeypoint.new(1, Color3.fromRGB(180,   0, 255)),
         }
         TweenService:Create(centralGlow, TweenInfo.new(0.4), { Rate = 1400 }):Play()
         centralGlow:Emit(200)
@@ -501,6 +656,8 @@ local function enterPhase4()
     if ringParticles then ringParticles:Emit(120) end
     if yellowRingParticles then yellowRingParticles:Emit(90) end
 
+    -- Update existing bolts to phase 4 colors
+    local cols4 = BOLT_COLORS[4]
     for _, b in ipairs(lightningBeams) do
         if b.beam then
             b.beam.Width0 = 3.3
@@ -508,9 +665,8 @@ local function enterPhase4()
             b.beam.LightEmission = 2.5
             b.beam.Transparency = NumberSequence.new(0.0)
             b.beam.Color = ColorSequence.new{
-                ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 120, 255)),
-                ColorSequenceKeypoint.new(0.5, Color3.fromRGB(200, 50, 255)),
-                ColorSequenceKeypoint.new(1, Color3.fromRGB(140, 0, 255)),
+                ColorSequenceKeypoint.new(0, cols4[1]),
+                ColorSequenceKeypoint.new(1, cols4[2]),
             }
         end
     end
@@ -525,11 +681,6 @@ local function enterPhase4()
                 b.beam.Width1 = 1.15
                 b.beam.LightEmission = 2.5
                 b.beam.Transparency = NumberSequence.new(0.0)
-                b.beam.Color = ColorSequence.new{
-                    ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 120, 255)),
-                    ColorSequenceKeypoint.new(0.5, Color3.fromRGB(200, 50, 255)),
-                    ColorSequenceKeypoint.new(1, Color3.fromRGB(140, 0, 255)),
-                }
             end
             table.insert(lightningBeams, b)
         end
@@ -541,7 +692,7 @@ local function enterPhase4()
             local interval = 0.28 + math.random() * 0.42
             task.wait(interval)
             if not isCharging or chargePhase ~= 4 then break end
-            local colors = {{255,120,255},{200,50,255},{180,0,255}}
+            local colors = {{255,100,255},{200,40,255},{140,0,255}}
             local c = colors[math.random(1, #colors)]
             screenFlash(c[1], c[2], c[3], 0.06 + math.random() * 0.22, 0.22 + math.random() * 0.28)
         end
@@ -564,11 +715,9 @@ local function enterPhase5()
     end
 
     if tracks.superUltraCharge and tracks.superUltraCharge.IsPlaying then tracks.superUltraCharge:Stop(0.22) end
-    if tracks.divineAscension then
-        tracks.divineAscension:Play(0.2, 1, 0.75)
-    end
+    if tracks.divineAscension then tracks.divineAscension:Play(0.2, 1, 0.75) end
 
-    persistentSunColor = Color3.fromRGB(255, 255, 240)
+    persistentSunColor  = Color3.fromRGB(255, 255, 240)
     persistentLightColor = Color3.fromRGB(255, 255, 240)
 
     if sunOrb then
@@ -583,6 +732,11 @@ local function enterPhase5()
             }
             TweenService:Create(sunFire, TweenInfo.new(1.0), { Rate = 400 }):Play()
         end
+        updateOrbParticleColors(
+            { ColorSequenceKeypoint.new(0, Color3.fromRGB(255,255,255)), ColorSequenceKeypoint.new(0.5, Color3.fromRGB(220,240,255)), ColorSequenceKeypoint.new(1, Color3.fromRGB(180,200,255)) },
+            { ColorSequenceKeypoint.new(0, Color3.fromRGB(255,255,255)), ColorSequenceKeypoint.new(1, Color3.fromRGB(200,230,255)) },
+            { ColorSequenceKeypoint.new(0, Color3.fromRGB(255,255,255)), ColorSequenceKeypoint.new(0.5, Color3.fromRGB(210,235,255)), ColorSequenceKeypoint.new(1, Color3.fromRGB(170,210,255)) }
+        )
     end
 
     screenFlash(255, 255, 255, 0.0,  0.08)
@@ -594,7 +748,11 @@ local function enterPhase5()
     if chargeSoundB then tw(chargeSoundB, 1.2, { Volume = 0.55, PlaybackSpeed = 0.55 }) end
 
     if chargeParticles then
-        chargeParticles.Color = ColorSequence.new(Color3.fromRGB(255, 255, 255))
+        chargeParticles.Color = ColorSequence.new{
+            ColorSequenceKeypoint.new(0,   Color3.fromRGB(255, 255, 255)),
+            ColorSequenceKeypoint.new(0.5, Color3.fromRGB(220, 240, 255)),
+            ColorSequenceKeypoint.new(1,   Color3.fromRGB(200, 220, 255)),
+        }
         TweenService:Create(chargeParticles, TweenInfo.new(0.8), { Rate = 320000 }):Play()
         chargeParticles:Emit(5000)
     end
@@ -612,6 +770,8 @@ local function enterPhase5()
         yellowRingParticles:Emit(160)
     end
 
+    -- Update existing bolts to phase 5 colors
+    local cols5 = BOLT_COLORS[5]
     for _, b in ipairs(lightningBeams) do
         if b.beam then
             b.beam.Width0       = 4.1
@@ -619,12 +779,12 @@ local function enterPhase5()
             b.beam.LightEmission = 3.0
             b.beam.Transparency = NumberSequence.new(0.0)
             b.beam.Color = ColorSequence.new{
-                ColorSequenceKeypoint.new(0,   Color3.fromRGB(255, 255, 255)),
-                ColorSequenceKeypoint.new(0.5, Color3.fromRGB(200, 230, 255)),
-                ColorSequenceKeypoint.new(1,   Color3.fromRGB(180, 210, 255)),
+                ColorSequenceKeypoint.new(0, cols5[1]),
+                ColorSequenceKeypoint.new(1, cols5[2]),
             }
         end
     end
+
     local char5 = lp.Character
     local hrp5  = char5 and char5:FindFirstChild("HumanoidRootPart")
     if hrp5 then
@@ -635,44 +795,56 @@ local function enterPhase5()
                 b.beam.Width1       = 1.4
                 b.beam.LightEmission = 3.0
                 b.beam.Transparency = NumberSequence.new(0.0)
-                b.beam.Color = ColorSequence.new{
-                    ColorSequenceKeypoint.new(0,   Color3.fromRGB(255, 255, 255)),
-                    ColorSequenceKeypoint.new(0.5, Color3.fromRGB(210, 235, 255)),
-                    ColorSequenceKeypoint.new(1,   Color3.fromRGB(180, 210, 255)),
-                }
             end
             table.insert(lightningBeams, b)
         end
     end
 
     if hrp5 and chargeBaseCF then
-        local floatTarget = chargeBaseCF + Vector3.new(0, CFG.phase5FloatHeight, 0)
         if phase5FloatConn then phase5FloatConn:Disconnect() end
-        local lastBurstTime = 0
-        local burstInterval = 0
+
+        local basePos    = chargeBaseCF.Position
+        local baseRot    = chargeBaseCF - chargeBaseCF.Position
+        local floatOrigin = basePos + Vector3.new(0, CFG.phase5FloatHeight, 0)
+
+        local freqY  = 0.38
+        local freqX  = 0.17
+        local freqZ  = 0.23
+        local ampY   = 1.6
+        local ampXZ  = 1.2
+
+        local phaseX = math.random() * math.pi * 2
+        local phaseZ = math.random() * math.pi * 2
+
+        local lastMoveTime  = 0
+        local MOVE_INTERVAL = 0.85
 
         phase5FloatConn = RunService.Heartbeat:Connect(function()
-            if not isCharging or chargePhase ~= 5 or not hrp5 or not chargeBaseCF then
+            if not isCharging or chargePhase ~= 5 or not hrp5 or not hrp5.Parent then
                 if phase5FloatConn then phase5FloatConn:Disconnect(); phase5FloatConn = nil end
                 return
             end
+
             local t = tick()
-            local bob = math.sin(t * 0.9) * 1.4
-            floatTarget = chargeBaseCF + Vector3.new(0, CFG.phase5FloatHeight + bob, 0)
+            local driftX = math.sin(t * freqX + phaseX) * ampXZ
+            local driftY = math.sin(t * freqY) * ampY
+            local driftZ = math.sin(t * freqZ + phaseZ) * ampXZ
 
-            hrp5.CFrame = hrp5.CFrame:Lerp(
-                CFrame.new(floatTarget.Position) * (chargeBaseCF - chargeBaseCF.Position),
-                CFG.phase5FloatSpeed
-            )
+            local sineTarget = floatOrigin + Vector3.new(driftX, driftY, driftZ)
 
-            if t - lastBurstTime > burstInterval then
-                lastBurstTime = t
-                burstInterval = 0.6 + math.random() * 1.1
-                local snapX = (math.random() - 0.5) * 3.2
-                local snapZ = (math.random() - 0.5) * 3.2
-                local snapY = CFG.phase5FloatHeight + (math.random() - 0.5) * 2.5
-                hrp5.CFrame = chargeBaseCF * CFrame.new(snapX, snapY, snapZ)
+            if t - lastMoveTime > MOVE_INTERVAL then
+                lastMoveTime    = t
+                MOVE_INTERVAL   = 0.7 + math.random() * 0.8
+                local ox = (math.random() - 0.5) * 0.6
+                local oz = (math.random() - 0.5) * 0.6
+                local newOrigin = floatOrigin + Vector3.new(ox, 0, oz)
+                if (newOrigin - floatOrigin).Magnitude < 1.5 then
+                    floatOrigin = newOrigin
+                end
             end
+
+            local newPos = hrp5.Position:Lerp(sineTarget, CFG.phase5FloatSpeed * 1.8)
+            hrp5.CFrame  = CFrame.new(newPos) * baseRot
         end)
     end
 
@@ -687,7 +859,7 @@ local function enterPhase5()
     end)
 
     local charForEnd = lp.Character
-    local hrpForEnd = charForEnd and charForEnd:FindFirstChild("HumanoidRootPart")
+    local hrpForEnd  = charForEnd and charForEnd:FindFirstChild("HumanoidRootPart")
     if hrpForEnd then
         task.delay(CFG.phase5Duration, function()
             if isCharging and chargePhase == 5 and hrpForEnd.Parent then
@@ -721,18 +893,39 @@ local function resetEnhancements()
                     ColorSequenceKeypoint.new(0.5, Color3.fromRGB(220, 240, 255)),
                     ColorSequenceKeypoint.new(1,   Color3.fromRGB(180, 200, 255)),
                 }
+                updateOrbParticleColors(
+                    { ColorSequenceKeypoint.new(0, Color3.fromRGB(255,255,255)), ColorSequenceKeypoint.new(0.5, Color3.fromRGB(220,240,255)), ColorSequenceKeypoint.new(1, Color3.fromRGB(180,200,255)) },
+                    { ColorSequenceKeypoint.new(0, Color3.fromRGB(255,255,255)), ColorSequenceKeypoint.new(1, Color3.fromRGB(200,230,255)) },
+                    { ColorSequenceKeypoint.new(0, Color3.fromRGB(255,255,255)), ColorSequenceKeypoint.new(0.5, Color3.fromRGB(210,235,255)), ColorSequenceKeypoint.new(1, Color3.fromRGB(170,210,255)) }
+                )
             elseif persistentSunColor == Color3.fromRGB(80,200,255) then
                 sunFire.Color = ColorSequence.new{
                     ColorSequenceKeypoint.new(0,   Color3.fromRGB(100, 220, 255)),
-                    ColorSequenceKeypoint.new(0.5, Color3.fromRGB(60, 180, 255)),
-                    ColorSequenceKeypoint.new(1,   Color3.fromRGB(20, 140, 255)),
+                    ColorSequenceKeypoint.new(0.5, Color3.fromRGB( 60, 180, 255)),
+                    ColorSequenceKeypoint.new(1,   Color3.fromRGB( 20, 140, 255)),
                 }
+                updateOrbParticleColors(
+                    { ColorSequenceKeypoint.new(0, Color3.fromRGB(100,220,255)), ColorSequenceKeypoint.new(0.5, Color3.fromRGB(60,180,255)), ColorSequenceKeypoint.new(1, Color3.fromRGB(20,140,255)) },
+                    { ColorSequenceKeypoint.new(0, Color3.fromRGB(200,245,255)), ColorSequenceKeypoint.new(1, Color3.fromRGB(60,180,255)) },
+                    { ColorSequenceKeypoint.new(0, Color3.fromRGB(180,240,255)), ColorSequenceKeypoint.new(0.5, Color3.fromRGB(60,190,255)), ColorSequenceKeypoint.new(1, Color3.fromRGB(20,120,220)) }
+                )
             elseif persistentSunColor == Color3.fromRGB(200,50,255) then
                 sunFire.Color = ColorSequence.new{
                     ColorSequenceKeypoint.new(0,   Color3.fromRGB(255, 120, 255)),
-                    ColorSequenceKeypoint.new(0.5, Color3.fromRGB(200, 50, 255)),
-                    ColorSequenceKeypoint.new(1,   Color3.fromRGB(140, 0, 255)),
+                    ColorSequenceKeypoint.new(0.5, Color3.fromRGB(200,  50, 255)),
+                    ColorSequenceKeypoint.new(1,   Color3.fromRGB(140,   0, 255)),
                 }
+                updateOrbParticleColors(
+                    { ColorSequenceKeypoint.new(0, Color3.fromRGB(255,120,255)), ColorSequenceKeypoint.new(0.5, Color3.fromRGB(200,50,255)), ColorSequenceKeypoint.new(1, Color3.fromRGB(140,0,255)) },
+                    { ColorSequenceKeypoint.new(0, Color3.fromRGB(255,200,255)), ColorSequenceKeypoint.new(1, Color3.fromRGB(180,0,255)) },
+                    { ColorSequenceKeypoint.new(0, Color3.fromRGB(240,140,255)), ColorSequenceKeypoint.new(0.5, Color3.fromRGB(190,40,255)), ColorSequenceKeypoint.new(1, Color3.fromRGB(120,0,200)) }
+                )
+            else
+                updateOrbParticleColors(
+                    { ColorSequenceKeypoint.new(0, Color3.fromRGB(255,255,120)), ColorSequenceKeypoint.new(0.5, Color3.fromRGB(255,180,30)), ColorSequenceKeypoint.new(1, Color3.fromRGB(200,60,0)) },
+                    { ColorSequenceKeypoint.new(0, Color3.fromRGB(255,255,200)), ColorSequenceKeypoint.new(1, Color3.fromRGB(255,200,50)) },
+                    { ColorSequenceKeypoint.new(0, Color3.fromRGB(255,220,80)), ColorSequenceKeypoint.new(0.5, Color3.fromRGB(255,120,0)), ColorSequenceKeypoint.new(1, Color3.fromRGB(200,40,0)) }
+                )
             end
         end
     end
@@ -751,65 +944,130 @@ local function resetEnhancements()
 
     for _, b in ipairs(lightningBeams) do
         if b.beam then b.beam:Destroy() end
-        if b.a0 then b.a0:Destroy() end
-        if b.a1 then b.a1:Destroy() end
+        if b.a0   then b.a0:Destroy()  end
+        if b.a1   then b.a1:Destroy()  end
     end
     lightningBeams = {}
 
     updateSunGodTitle(1)
 end
 
---// GUI (unchanged)
+--// GUI
 local screenGui = Instance.new("ScreenGui")
 screenGui.Name         = "CombatGUI"
 screenGui.ResetOnSpawn = false
 screenGui.Parent       = lp:WaitForChild("PlayerGui")
 
+local PHASE_BAR_COLORS = {
+    [1] = { Color3.fromRGB(255, 255, 80),  Color3.fromRGB(255, 160, 0)   },
+    [2] = { Color3.fromRGB(255, 180, 60),  Color3.fromRGB(220, 60, 0)    },
+    [3] = { Color3.fromRGB(100, 230, 255), Color3.fromRGB(30, 140, 255)  },
+    [4] = { Color3.fromRGB(255, 140, 255), Color3.fromRGB(160, 0, 255)   },
+    [5] = { Color3.fromRGB(255, 255, 255), Color3.fromRGB(180, 215, 255) },
+}
+local PHASE_STROKE_COLORS = {
+    [1] = Color3.fromRGB(255, 200, 0),
+    [2] = Color3.fromRGB(255, 100, 0),
+    [3] = Color3.fromRGB(80, 200, 255),
+    [4] = Color3.fromRGB(200, 50, 255),
+    [5] = Color3.fromRGB(220, 240, 255),
+}
+
 local function makeBar(posY, label)
+    local shadow = Instance.new("Frame", screenGui)
+    shadow.Size             = UDim2.new(0, 356, 0, 46)
+    shadow.Position         = UDim2.new(0.5, -178, posY, -4)
+    shadow.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+    shadow.BackgroundTransparency = 0.55
+    shadow.BorderSizePixel  = 0
+    Instance.new("UICorner", shadow).CornerRadius = UDim.new(0, 14)
+
     local frame = Instance.new("Frame", screenGui)
-    frame.Size             = UDim2.new(0, 340, 0, 32)
+    frame.Size             = UDim2.new(0, 340, 0, 38)
     frame.Position         = UDim2.new(0.5, -170, posY, 0)
-    frame.BackgroundColor3 = Color3.fromRGB(22, 22, 22)
+    frame.BackgroundColor3 = Color3.fromRGB(10, 10, 14)
     frame.BorderSizePixel  = 0
-    Instance.new("UICorner", frame).CornerRadius = UDim.new(0, 10)
+    Instance.new("UICorner", frame).CornerRadius = UDim.new(0, 12)
+
     local stroke = Instance.new("UIStroke", frame)
-    stroke.Color       = Color3.fromRGB(255, 200, 0)
-    stroke.Transparency = 0.45
-    stroke.Thickness   = 1.5
+    stroke.Color        = Color3.fromRGB(255, 200, 0)
+    stroke.Transparency = 0.25
+    stroke.Thickness    = 2
+
+    local shimmer = Instance.new("Frame", frame)
+    shimmer.Size             = UDim2.new(1, -4, 0, 10)
+    shimmer.Position         = UDim2.new(0, 2, 0, 2)
+    shimmer.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+    shimmer.BackgroundTransparency = 0.92
+    shimmer.BorderSizePixel  = 0
+    Instance.new("UICorner", shimmer).CornerRadius = UDim.new(0, 6)
+
     local fill = Instance.new("Frame", frame)
     fill.Size             = UDim2.new(1, 0, 1, 0)
     fill.BackgroundColor3 = Color3.fromRGB(255, 220, 0)
     fill.BorderSizePixel  = 0
-    Instance.new("UICorner", fill).CornerRadius = UDim.new(0, 10)
+    Instance.new("UICorner", fill).CornerRadius = UDim.new(0, 12)
+
     local grad = Instance.new("UIGradient", fill)
     grad.Color = ColorSequence.new{
-        ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 255, 80)),
-        ColorSequenceKeypoint.new(1, Color3.fromRGB(255, 140, 0)),
+        ColorSequenceKeypoint.new(0,   Color3.fromRGB(255, 255, 80)),
+        ColorSequenceKeypoint.new(0.5, Color3.fromRGB(255, 200, 20)),
+        ColorSequenceKeypoint.new(1,   Color3.fromRGB(255, 140, 0)),
     }
+    grad.Rotation = 0
+
+    local gloss = Instance.new("Frame", fill)
+    gloss.Size             = UDim2.new(1, 0, 0.45, 0)
+    gloss.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+    gloss.BackgroundTransparency = 0.78
+    gloss.BorderSizePixel  = 0
+    Instance.new("UICorner", gloss).CornerRadius = UDim.new(0, 12)
+
     local lbl = Instance.new("TextLabel", frame)
-    lbl.Size             = UDim2.new(1, 0, 1, 0)
+    lbl.Size             = UDim2.new(1, -8, 1, 0)
+    lbl.Position         = UDim2.new(0, 8, 0, 0)
     lbl.BackgroundTransparency = 1
-    lbl.Text             = label
+    lbl.Text             = label:upper()
     lbl.TextColor3       = Color3.fromRGB(255, 255, 255)
-    lbl.TextStrokeTransparency = 0.7
-    lbl.Font             = Enum.Font.GothamBold
-    lbl.TextSize         = 16
-    return frame, fill
+    lbl.TextStrokeColor3 = Color3.fromRGB(0, 0, 0)
+    lbl.TextStrokeTransparency = 0.4
+    lbl.Font             = Enum.Font.GothamBlack
+    lbl.TextSize         = 13
+    lbl.TextXAlignment   = Enum.TextXAlignment.Left
+
+    return frame, fill, stroke, grad
 end
 
-local chargeBar, chargeFill = makeBar(0.84, "Charge")
-local dashBar,   dashFill   = makeBar(0.79, "Dashes")
+local chargeBar, chargeFill, chargeStroke, chargeGrad = makeBar(0.855, "⚡ Charge")
+local dashBar,   dashFill,   dashStroke,   dashGrad   = makeBar(0.805, "💨 Dashes")
 
-local function updateDashBar()
-    tw(dashFill, 0.4, { Size = UDim2.new(dashCount / currentMaxDashes, 0, 1, 0) })
+local function updateBarPhaseColor(stroke, grad, phase)
+    local cols     = PHASE_BAR_COLORS[phase]   or PHASE_BAR_COLORS[1]
+    local strokeCol = PHASE_STROKE_COLORS[phase] or PHASE_STROKE_COLORS[1]
+    tw(stroke, 0.5, { Color = strokeCol })
+    grad.Color = ColorSequence.new{
+        ColorSequenceKeypoint.new(0,   cols[1]),
+        ColorSequenceKeypoint.new(0.5, Color3.fromRGB(
+            math.floor((cols[1].R*255 + cols[2].R*255)/2),
+            math.floor((cols[1].G*255 + cols[2].G*255)/2),
+            math.floor((cols[1].B*255 + cols[2].B*255)/2)
+        )),
+        ColorSequenceKeypoint.new(1,   cols[2]),
+    }
 end
-local function updateChargeBar()
+
+function updateDashBar()
+    tw(dashFill, 0.35, { Size = UDim2.new(dashCount / currentMaxDashes, 0, 1, 0) })
+    updateBarPhaseColor(dashStroke, dashGrad, chargePhase)
+end
+function updateChargeBar()
     tw(chargeFill, isCharging and CFG.powerupTime or 0.3,
         { Size = UDim2.new(isCharging and 1 or 0, 0, 1, 0) },
         isCharging and Enum.EasingStyle.Linear or Enum.EasingStyle.Quad)
+    updateBarPhaseColor(chargeStroke, chargeGrad, chargePhase)
 end
 
---// CONTROLS GUI (unchanged)
+--// CONTROLS GUI
 local controlsGui = Instance.new("ScreenGui")
 controlsGui.Name         = "ControlsGUI"
 controlsGui.ResetOnSpawn = false
@@ -817,91 +1075,132 @@ controlsGui.Enabled      = false
 controlsGui.Parent       = lp:WaitForChild("PlayerGui")
 
 local ctrlFrame = Instance.new("Frame", controlsGui)
-ctrlFrame.Size             = UDim2.new(0, 270, 0, 370)
-ctrlFrame.Position         = UDim2.new(0.5, -135, 0.5, -185)
-ctrlFrame.BackgroundColor3 = Color3.fromRGB(18, 18, 18)
-ctrlFrame.BackgroundTransparency = 0.1
+ctrlFrame.Size             = UDim2.new(0, 290, 0, 410)
+ctrlFrame.Position         = UDim2.new(0.5, -145, 0.5, -205)
+ctrlFrame.BackgroundColor3 = Color3.fromRGB(8, 8, 12)
+ctrlFrame.BackgroundTransparency = 0.08
 ctrlFrame.BorderSizePixel  = 0
 ctrlFrame.Active           = true
 ctrlFrame.Draggable        = true
-Instance.new("UICorner", ctrlFrame).CornerRadius = UDim.new(0, 14)
+Instance.new("UICorner", ctrlFrame).CornerRadius = UDim.new(0, 18)
+
 local ctrlStroke = Instance.new("UIStroke", ctrlFrame)
 ctrlStroke.Color       = Color3.fromRGB(255, 200, 0)
-ctrlStroke.Thickness   = 1.8
-ctrlStroke.Transparency = 0.3
+ctrlStroke.Thickness   = 2.2
+ctrlStroke.Transparency = 0.15
+
+local accentBar = Instance.new("Frame", ctrlFrame)
+accentBar.Size             = UDim2.new(1, 0, 0, 4)
+accentBar.BackgroundColor3 = Color3.fromRGB(255, 200, 0)
+accentBar.BorderSizePixel  = 0
+Instance.new("UICorner", accentBar).CornerRadius = UDim.new(0, 18)
+local accentGrad = Instance.new("UIGradient", accentBar)
+accentGrad.Color = ColorSequence.new{
+    ColorSequenceKeypoint.new(0,   Color3.fromRGB(255, 255, 80)),
+    ColorSequenceKeypoint.new(0.5, Color3.fromRGB(255, 160, 0)),
+    ColorSequenceKeypoint.new(1,   Color3.fromRGB(255, 80, 0)),
+}
 
 local ctrlTitle = Instance.new("TextLabel", ctrlFrame)
-ctrlTitle.Size             = UDim2.new(1, 0, 0, 48)
+ctrlTitle.Size             = UDim2.new(1, 0, 0, 56)
 ctrlTitle.BackgroundTransparency = 1
-ctrlTitle.Text             = "⚙  Settings"
-ctrlTitle.TextColor3       = Color3.fromRGB(255, 215, 0)
-ctrlTitle.Font             = Enum.Font.GothamBold
+ctrlTitle.Text             = "☀  SUN GOD"
+ctrlTitle.TextColor3       = Color3.fromRGB(255, 225, 80)
+ctrlTitle.TextStrokeColor3 = Color3.fromRGB(200, 100, 0)
+ctrlTitle.TextStrokeTransparency = 0.5
+ctrlTitle.Font             = Enum.Font.GothamBlack
 ctrlTitle.TextSize         = 22
+
+local ctrlSub = Instance.new("TextLabel", ctrlFrame)
+ctrlSub.Size             = UDim2.new(1, 0, 0, 20)
+ctrlSub.Position         = UDim2.new(0, 0, 0, 44)
+ctrlSub.BackgroundTransparency = 1
+ctrlSub.Text             = "S E T T I N G S"
+ctrlSub.TextColor3       = Color3.fromRGB(160, 140, 80)
+ctrlSub.Font             = Enum.Font.GothamBold
+ctrlSub.TextSize         = 11
+
+local divider = Instance.new("Frame", ctrlFrame)
+divider.Size             = UDim2.new(0.85, 0, 0, 1)
+divider.Position         = UDim2.new(0.075, 0, 0, 68)
+divider.BackgroundColor3 = Color3.fromRGB(255, 200, 0)
+divider.BackgroundTransparency = 0.7
+divider.BorderSizePixel  = 0
 
 local function makeToggle(labelText, yPos, key)
     local row = Instance.new("Frame", ctrlFrame)
-    row.Size             = UDim2.new(1, -20, 0, 42)
-    row.Position         = UDim2.new(0, 10, 0, yPos)
-    row.BackgroundTransparency = 1
+    row.Size             = UDim2.new(1, -24, 0, 46)
+    row.Position         = UDim2.new(0, 12, 0, yPos)
+    row.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+    row.BackgroundTransparency = 0.94
+    row.BorderSizePixel  = 0
+    Instance.new("UICorner", row).CornerRadius = UDim.new(0, 10)
 
     local lbl = Instance.new("TextLabel", row)
-    lbl.Size             = UDim2.new(0.65, 0, 1, 0)
+    lbl.Size             = UDim2.new(0.62, 0, 1, 0)
+    lbl.Position         = UDim2.new(0, 12, 0, 0)
     lbl.BackgroundTransparency = 1
     lbl.Text             = labelText
-    lbl.TextColor3       = Color3.fromRGB(220, 220, 220)
+    lbl.TextColor3       = Color3.fromRGB(230, 230, 230)
     lbl.Font             = Enum.Font.GothamSemibold
-    lbl.TextSize         = 17
+    lbl.TextSize         = 15
     lbl.TextXAlignment   = Enum.TextXAlignment.Left
 
     local btn = Instance.new("TextButton", row)
-    btn.Size             = UDim2.new(0.28, 0, 0.72, 0)
-    btn.Position         = UDim2.new(0.70, 0, 0.14, 0)
-    btn.Font             = Enum.Font.GothamBold
-    btn.TextSize         = 15
+    btn.Size             = UDim2.new(0, 72, 0, 30)
+    btn.Position         = UDim2.new(1, -84, 0.5, -15)
+    btn.Font             = Enum.Font.GothamBlack
+    btn.TextSize         = 13
     btn.TextColor3       = Color3.new(1, 1, 1)
     btn.BorderSizePixel  = 0
-    Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 8)
+    Instance.new("UICorner", btn).CornerRadius = UDim.new(1, 0)
+    local btnStroke = Instance.new("UIStroke", btn)
+    btnStroke.Thickness   = 1.5
+    btnStroke.Transparency = 0.5
 
     local function refresh()
         local on = toggles[key]
-        btn.Text             = on and "ON" or "OFF"
-        tw(btn, 0.2, { BackgroundColor3 = on and Color3.fromRGB(0, 190, 80) or Color3.fromRGB(190, 40, 40) })
+        btn.Text = on and "ON" or "OFF"
+        tw(btn, 0.18, { BackgroundColor3 = on and Color3.fromRGB(0, 210, 90) or Color3.fromRGB(200, 35, 35) })
+        btnStroke.Color = on and Color3.fromRGB(0, 255, 100) or Color3.fromRGB(255, 60, 60)
     end
     refresh()
 
     btn.MouseButton1Click:Connect(function()
         toggles[key] = not toggles[key]
         refresh()
-
         if key == "sunOrb" and sunOrb then
-            sunOrb.Transparency   = toggles.sunOrb and 0.2 or 1
+            sunOrb.Transparency = toggles.sunOrb and 0.2 or 1
             if sunFire then sunFire.Enabled = toggles.sunOrb end
         elseif key == "music" and musicSound then
-            if toggles.music then
-                musicSound:Play()
-            else
-                musicSound:Stop()
-            end
+            if toggles.music then musicSound:Play() else musicSound:Stop() end
         end
     end)
 end
 
-makeToggle("Sun Orb",         55,  "sunOrb")
-makeToggle("Dash Trail",      105, "dashTrail")
-makeToggle("Camera Shake",    155, "camShake")
-makeToggle("Character Shake", 205, "charShake")
-makeToggle("Background Music",255, "music")
+makeToggle("☀  Sun Orb",          78,  "sunOrb")
+makeToggle("💨  Dash Trail",       130, "dashTrail")
+makeToggle("📷  Camera Shake",     182, "camShake")
+makeToggle("⚡  Char. Shake",      234, "charShake")
+makeToggle("🎵  Music",            286, "music")
+
+local divider2 = Instance.new("Frame", ctrlFrame)
+divider2.Size             = UDim2.new(0.85, 0, 0, 1)
+divider2.Position         = UDim2.new(0.075, 0, 0, 344)
+divider2.BackgroundColor3 = Color3.fromRGB(255, 200, 0)
+divider2.BackgroundTransparency = 0.7
+divider2.BorderSizePixel  = 0
 
 local keybindInfo = Instance.new("TextLabel", ctrlFrame)
-keybindInfo.Size             = UDim2.new(1, -20, 0, 80)
-keybindInfo.Position         = UDim2.new(0, 10, 0, 315)
+keybindInfo.Size             = UDim2.new(1, -24, 0, 58)
+keybindInfo.Position         = UDim2.new(0, 12, 0, 350)
 keybindInfo.BackgroundTransparency = 1
-keybindInfo.TextColor3       = Color3.fromRGB(160, 160, 160)
+keybindInfo.TextColor3       = Color3.fromRGB(140, 130, 100)
 keybindInfo.Font             = Enum.Font.Gotham
-keybindInfo.TextSize         = 14
+keybindInfo.TextSize         = 13
 keybindInfo.TextWrapped      = true
 keybindInfo.TextXAlignment   = Enum.TextXAlignment.Left
-keybindInfo.Text             = "LMB  →  Dash + Punch\nZ  →  Toggle Charge\nC  →  Open/Close Settings"
+keybindInfo.Text             = "[LMB]  Dash + Punch    [Z]  Toggle Charge\n[C]  Open / Close Settings"
 
 UserInputService.InputBegan:Connect(function(input, gp)
     if gp then return end
@@ -910,7 +1209,7 @@ UserInputService.InputBegan:Connect(function(input, gp)
     end
 end)
 
---// SUN ORB (unchanged)
+--// SUN ORB
 local function createSunOrb(hrp)
     if not toggles.sunOrb then return end
     if sunOrb then sunOrb:Destroy() end
@@ -937,25 +1236,76 @@ local function createSunOrb(hrp)
     sunFire = Instance.new("ParticleEmitter", sunOrb)
     sunFire.Texture      = "rbxasset://textures/particles/fire_main.dds"
     sunFire.Color        = ColorSequence.new{
-        ColorSequenceKeypoint.new(0,   Color3.fromRGB(255, 255, 80)),
-        ColorSequenceKeypoint.new(0.4, Color3.fromRGB(255, 210, 60)),
-        ColorSequenceKeypoint.new(1,   Color3.fromRGB(255, 50,  0)),
+        ColorSequenceKeypoint.new(0,   Color3.fromRGB(255, 255, 120)),
+        ColorSequenceKeypoint.new(0.3, Color3.fromRGB(255, 220, 60)),
+        ColorSequenceKeypoint.new(0.7, Color3.fromRGB(255, 100, 10)),
+        ColorSequenceKeypoint.new(1,   Color3.fromRGB(180, 30, 0)),
     }
     sunFire.Size         = NumberSequence.new{
-        NumberSequenceKeypoint.new(0, 2.6),
-        NumberSequenceKeypoint.new(1, 0.3),
+        NumberSequenceKeypoint.new(0, 4.2),
+        NumberSequenceKeypoint.new(0.4, 5.5),
+        NumberSequenceKeypoint.new(1, 0.4),
     }
-    sunFire.Lifetime     = NumberRange.new(1.0, 2.4)
-    sunFire.Rate         = 170
-    sunFire.Speed        = NumberRange.new(6, 18)
+    sunFire.Lifetime     = NumberRange.new(1.2, 2.8)
+    sunFire.Rate         = 260
+    sunFire.Speed        = NumberRange.new(8, 24)
     sunFire.SpreadAngle  = Vector2.new(360, 360)
-    sunFire.RotSpeed     = NumberRange.new(-180, 180)
+    sunFire.RotSpeed     = NumberRange.new(-220, 220)
     sunFire.LightEmission = 1
     sunFire.Transparency = NumberSequence.new{
-        NumberSequenceKeypoint.new(0, 0.1),
-        NumberSequenceKeypoint.new(1, 1),
+        NumberSequenceKeypoint.new(0,   0.0),
+        NumberSequenceKeypoint.new(0.5, 0.15),
+        NumberSequenceKeypoint.new(1,   1),
     }
     sunFire.Enabled = true
+
+    sunInnerSpark = Instance.new("ParticleEmitter", sunOrb)
+    sunInnerSpark.Texture      = "rbxasset://textures/particles/sparkles.png"
+    sunInnerSpark.Color        = ColorSequence.new{
+        ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 255, 200)),
+        ColorSequenceKeypoint.new(1, Color3.fromRGB(255, 200, 50)),
+    }
+    sunInnerSpark.Size         = NumberSequence.new{
+        NumberSequenceKeypoint.new(0, 0.6),
+        NumberSequenceKeypoint.new(0.5, 1.4),
+        NumberSequenceKeypoint.new(1, 0),
+    }
+    sunInnerSpark.Lifetime     = NumberRange.new(0.6, 1.4)
+    sunInnerSpark.Rate         = 120
+    sunInnerSpark.Speed        = NumberRange.new(12, 30)
+    sunInnerSpark.SpreadAngle  = Vector2.new(360, 360)
+    sunInnerSpark.RotSpeed     = NumberRange.new(-300, 300)
+    sunInnerSpark.LightEmission = 1
+    sunInnerSpark.Transparency = NumberSequence.new{
+        NumberSequenceKeypoint.new(0, 0),
+        NumberSequenceKeypoint.new(0.6, 0.2),
+        NumberSequenceKeypoint.new(1, 1),
+    }
+    sunInnerSpark.Enabled = true
+
+    sunEmbers = Instance.new("ParticleEmitter", sunOrb)
+    sunEmbers.Texture      = "rbxasset://textures/whiteCircle.png"
+    sunEmbers.Color        = ColorSequence.new{
+        ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 230, 80)),
+        ColorSequenceKeypoint.new(0.5, Color3.fromRGB(255, 120, 0)),
+        ColorSequenceKeypoint.new(1, Color3.fromRGB(200, 40, 0)),
+    }
+    sunEmbers.Size         = NumberSequence.new{
+        NumberSequenceKeypoint.new(0, 0.3),
+        NumberSequenceKeypoint.new(0.5, 0.55),
+        NumberSequenceKeypoint.new(1, 0),
+    }
+    sunEmbers.Lifetime     = NumberRange.new(1.5, 3.5)
+    sunEmbers.Rate         = 55
+    sunEmbers.Speed        = NumberRange.new(18, 40)
+    sunEmbers.SpreadAngle  = Vector2.new(360, 360)
+    sunEmbers.LightEmission = 0.8
+    sunEmbers.Transparency = NumberSequence.new{
+        NumberSequenceKeypoint.new(0, 0.2),
+        NumberSequenceKeypoint.new(0.5, 0.5),
+        NumberSequenceKeypoint.new(1, 1),
+    }
+    sunEmbers.Enabled = true
 
     tw(sunOrb, CFG.sunSummonTime, {
         Size     = Vector3.new(CFG.sunSize, CFG.sunSize, CFG.sunSize),
@@ -997,14 +1347,14 @@ local function createSunOrb(hrp)
             local localZ = currentMinor * math.sin(angle)
             local yBob   = math.sin(t * CFG.orbitBobFreq * math.pi * 2) * CFG.orbitBobAmp
 
-            local hrpCF = hrp.CFrame
+            local hrpCF      = hrp.CFrame
             local rightVec   = hrpCF.RightVector
             local forwardVec = hrpCF.LookVector
             local worldOffset = rightVec * localX + forwardVec * localZ
 
             targetOffset  = worldOffset + Vector3.new(0, yBob, 0) + jitter
-            transitionStart    = t
-            wasChargingLast    = true
+            transitionStart   = t
+            wasChargingLast   = true
         else
             local behind  = -hrp.CFrame.LookVector * CFG.behindDist
             local swayX   = math.sin(t * CFG.swayFreq) * CFG.swayAmp
@@ -1049,118 +1399,115 @@ local function playOnly(track, fade, speed)
     pcall(track.Play, track, fade or 0.1, 1, speed or 1)
 end
 
---// DASH TRAIL (unchanged)
+--// DASH TRAIL + BALL (full per-phase colors)
 local function makeDashTrail(hrp)
+    local phase = isCharging and chargePhase or 1
+
+    -- Colored trail
     local trail = Instance.new("Trail")
     local a0 = Instance.new("Attachment", hrp); a0.Position = Vector3.new(0,  4, 0)
     local a1 = Instance.new("Attachment", hrp); a1.Position = Vector3.new(0, -4, 0)
     trail.Attachment0   = a0
     trail.Attachment1   = a1
-    trail.Lifetime      = 0.18
+    trail.Lifetime      = 0.20
     trail.MinLength     = 0.05
     trail.Transparency  = NumberSequence.new{ NumberSequenceKeypoint.new(0, 0), NumberSequenceKeypoint.new(1, 1) }
     trail.WidthScale    = NumberSequence.new{ NumberSequenceKeypoint.new(0, 7), NumberSequenceKeypoint.new(1, 0) }
-
-    local trailColor
-    if persistentSunColor == Color3.fromRGB(255, 255, 240) then
-        trailColor = ColorSequence.new{
-            ColorSequenceKeypoint.new(0,   Color3.fromRGB(255, 255, 255)),
-            ColorSequenceKeypoint.new(0.5, Color3.fromRGB(220, 240, 255)),
-            ColorSequenceKeypoint.new(1,   Color3.fromRGB(180, 200, 255)),
-        }
-    elseif persistentSunColor == Color3.fromRGB(80, 200, 255) then
-        trailColor = ColorSequence.new{
-            ColorSequenceKeypoint.new(0,   Color3.fromRGB(80, 200, 255)),
-            ColorSequenceKeypoint.new(0.5, Color3.fromRGB(140, 220, 255)),
-            ColorSequenceKeypoint.new(1,   Color3.fromRGB(200, 240, 255)),
-        }
-    elseif persistentSunColor == Color3.fromRGB(200, 50, 255) then
-        trailColor = ColorSequence.new{
-            ColorSequenceKeypoint.new(0,   Color3.fromRGB(255, 120, 255)),
-            ColorSequenceKeypoint.new(0.5, Color3.fromRGB(200, 50, 255)),
-            ColorSequenceKeypoint.new(1,   Color3.fromRGB(140, 0, 255)),
-        }
-    else
-        trailColor = ColorSequence.new{
-            ColorSequenceKeypoint.new(0,   Color3.fromRGB(255, 255, 80)),
-            ColorSequenceKeypoint.new(0.5, Color3.fromRGB(255, 190, 0)),
-            ColorSequenceKeypoint.new(1,   Color3.fromRGB(255, 40, 0)),
-        }
-    end
-
-    trail.Color         = trailColor
-    trail.LightEmission = 0.75
+    trail.Color         = DASH_TRAIL_COLORS[phase] or DASH_TRAIL_COLORS[1]
+    trail.LightEmission = 0.85
     trail.Parent        = hrp
-    Debris:AddItem(trail, 0.4)
-    Debris:AddItem(a0, 0.4)
-    Debris:AddItem(a1, 0.4)
+    Debris:AddItem(trail, 0.5)
+    Debris:AddItem(a0, 0.5)
+    Debris:AddItem(a1, 0.5)
+
+    -- Flame ball particle burst (phase-colored)
+    local cols = DASH_BALL_COLORS[phase] or DASH_BALL_COLORS[1]
+    local ballAtt = Instance.new("Attachment", hrp)
+    ballAtt.Position = Vector3.new(0, 0, 0)
+
+    local ball = Instance.new("ParticleEmitter", ballAtt)
+    ball.Texture       = "rbxasset://textures/whiteCircle.png"
+    ball.Color         = ColorSequence.new{
+        ColorSequenceKeypoint.new(0,   cols[1]),
+        ColorSequenceKeypoint.new(0.5, cols[2]),
+        ColorSequenceKeypoint.new(1,   cols[3]),
+    }
+    ball.Size          = NumberSequence.new{
+        NumberSequenceKeypoint.new(0,   1.8),
+        NumberSequenceKeypoint.new(0.3, 3.5),
+        NumberSequenceKeypoint.new(0.7, 2.2),
+        NumberSequenceKeypoint.new(1,   0),
+    }
+    ball.Lifetime      = NumberRange.new(0.18, 0.40)
+    ball.Rate          = 0
+    ball.Speed         = NumberRange.new(14, 38)
+    ball.SpreadAngle   = Vector2.new(360, 360)
+    ball.RotSpeed      = NumberRange.new(-250, 250)
+    ball.LightEmission = 1
+    ball.Transparency  = NumberSequence.new{
+        NumberSequenceKeypoint.new(0,   0.0),
+        NumberSequenceKeypoint.new(0.4, 0.1),
+        NumberSequenceKeypoint.new(1,   1.0),
+    }
+    ball:Emit(60 + chargePhase * 20)
+
+    -- Sparkle layer
+    local spark = Instance.new("ParticleEmitter", ballAtt)
+    spark.Texture       = "rbxasset://textures/particles/sparkles.png"
+    spark.Color         = ColorSequence.new{
+        ColorSequenceKeypoint.new(0, cols[1]),
+        ColorSequenceKeypoint.new(1, cols[2]),
+    }
+    spark.Size          = NumberSequence.new{ NumberSequenceKeypoint.new(0, 0.4), NumberSequenceKeypoint.new(0.5, 1.0), NumberSequenceKeypoint.new(1, 0) }
+    spark.Lifetime      = NumberRange.new(0.2, 0.5)
+    spark.Rate          = 0
+    spark.Speed         = NumberRange.new(20, 50)
+    spark.SpreadAngle   = Vector2.new(360, 360)
+    spark.LightEmission = 1
+    spark.Transparency  = NumberSequence.new{ NumberSequenceKeypoint.new(0, 0), NumberSequenceKeypoint.new(1, 1) }
+    spark:Emit(40 + chargePhase * 15)
+
+    Debris:AddItem(ballAtt, 0.7)
 end
 
---// PUNCH HELPERS (flame colors + sound pitch + animation speed - FIXED)
+--// PUNCH HELPERS
 local function getPunchFlameColor()
     if not isCharging then
         return ColorSequence.new{
-            ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 220, 0)),
-            ColorSequenceKeypoint.new(1, Color3.fromRGB(255, 50, 0)),
+            ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 220,  0)),
+            ColorSequenceKeypoint.new(1, Color3.fromRGB(255,  50,  0)),
         }
     end
-    if chargePhase == 2 then
-        return ColorSequence.new{
-            ColorSequenceKeypoint.new(0,   Color3.fromRGB(255, 140, 50)),
-            ColorSequenceKeypoint.new(1,   Color3.fromRGB(200, 45, 0)),
-        }
-    elseif chargePhase == 3 then
-        return ColorSequence.new{
-            ColorSequenceKeypoint.new(0,   Color3.fromRGB(80, 200, 255)),
-            ColorSequenceKeypoint.new(0.5, Color3.fromRGB(140, 220, 255)),
-            ColorSequenceKeypoint.new(1,   Color3.fromRGB(200, 240, 255)),
-        }
-    elseif chargePhase == 4 then
-        return ColorSequence.new{
-            ColorSequenceKeypoint.new(0,   Color3.fromRGB(255, 120, 255)),
-            ColorSequenceKeypoint.new(1,   Color3.fromRGB(140, 0, 255)),
-        }
-    elseif chargePhase == 5 then
-        return ColorSequence.new{
-            ColorSequenceKeypoint.new(0,   Color3.fromRGB(255, 255, 255)),
-            ColorSequenceKeypoint.new(0.5, Color3.fromRGB(220, 240, 255)),
-            ColorSequenceKeypoint.new(1,   Color3.fromRGB(180, 200, 255)),
-        }
-    end
+    local cols = DASH_BALL_COLORS[chargePhase] or DASH_BALL_COLORS[1]
     return ColorSequence.new{
-        ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 220, 0)),
-        ColorSequenceKeypoint.new(1, Color3.fromRGB(255, 50, 0)),
+        ColorSequenceKeypoint.new(0,   cols[1]),
+        ColorSequenceKeypoint.new(0.5, cols[2]),
+        ColorSequenceKeypoint.new(1,   cols[3]),
     }
 end
 
-local function getPunchPitch()
-    if not isCharging then return 1.2 end
-    if chargePhase == 2 then return 1.1
-    elseif chargePhase == 3 then return 0.9
-    elseif chargePhase == 4 then return 0.75
-    elseif chargePhase == 5 then return 0.6
-    end
-    return 1.2
+local PUNCH_STATS = {
+    [0] = { animSpeed = 0.38, pitch = 1.25, cooldown = 0.9  },
+    [1] = { animSpeed = 0.38, pitch = 1.25, cooldown = 0.9  },
+    [2] = { animSpeed = 0.30, pitch = 1.05, cooldown = 1.15 },
+    [3] = { animSpeed = 0.22, pitch = 0.88, cooldown = 1.55 },
+    [4] = { animSpeed = 0.15, pitch = 0.70, cooldown = 2.20 },
+    [5] = { animSpeed = 0.10, pitch = 0.52, cooldown = 3.10 },
+}
+local function getPunchStats()
+    if not isCharging then return PUNCH_STATS[0] end
+    return PUNCH_STATS[chargePhase] or PUNCH_STATS[1]
 end
 
-local function getPunchSpeed()
-    if not isCharging then return 0.35 end
-    if chargePhase == 2 then return 0.30
-    elseif chargePhase == 3 then return 0.25
-    elseif chargePhase == 4 then return 0.20
-    elseif chargePhase == 5 then return 0.15
-    end
-    return 0.35
-end
-
---// DASH + PUNCH (fixed flame colors, pitch, and per-phase speed)
+--// DASH
 local function doDash(hrp, humanoid)
     if dashCooldown or dashCount < 1 then return false end
 
     local consume = 1
     if isCharging then
         if chargePhase == 3 then consume = 2
-        elseif chargePhase == 5 then consume = 3 end
+        elseif chargePhase == 4 then consume = 3
+        elseif chargePhase == 5 then consume = 4 end
     end
     if dashCount < consume then return false end
 
@@ -1173,20 +1520,16 @@ local function doDash(hrp, humanoid)
     humanoid.AutoRotate = false
 
     local currentDashForce = CFG.dashForce
-    local currentDashTime = CFG.dashTime
+    local currentDashTime  = CFG.dashTime
     if isCharging then
         if chargePhase == 2 then
-            currentDashForce = CFG.dashForcePhase2
-            currentDashTime = CFG.dashTimePhase2
+            currentDashForce = CFG.dashForcePhase2; currentDashTime = CFG.dashTimePhase2
         elseif chargePhase == 3 then
-            currentDashForce = CFG.dashForcePhase3
-            currentDashTime = CFG.dashTimePhase3
+            currentDashForce = CFG.dashForcePhase3; currentDashTime = CFG.dashTimePhase3
         elseif chargePhase == 4 then
-            currentDashForce = CFG.dashForcePhase4
-            currentDashTime = CFG.dashTimePhase4
+            currentDashForce = CFG.dashForcePhase4; currentDashTime = CFG.dashTimePhase4
         elseif chargePhase == 5 then
-            currentDashForce = CFG.dashForcePhase5
-            currentDashTime = CFG.dashTimePhase5
+            currentDashForce = CFG.dashForcePhase5; currentDashTime = CFG.dashTimePhase5
         end
     end
 
@@ -1203,8 +1546,7 @@ local function doDash(hrp, humanoid)
         if chargePhase == 2 then dashPitch = 0.9
         elseif chargePhase == 3 then dashPitch = 0.8
         elseif chargePhase == 4 then dashPitch = 0.65
-        elseif chargePhase == 5 then dashPitch = 0.5
-        end
+        elseif chargePhase == 5 then dashPitch = 0.5 end
     end
     playSound(CFG.dashSound, hrp, 1, dashPitch)
 
@@ -1212,50 +1554,73 @@ local function doDash(hrp, humanoid)
         humanoid.AutoRotate = true
         isDashing = false
     end)
-    task.delay(CFG.dashCooldown, function() dashCooldown = false end)
+
+    local phaseCooldown = CFG.dashCooldown
+    if isCharging then
+        if chargePhase == 2 then phaseCooldown = CFG.dashCooldown * 1.3
+        elseif chargePhase == 3 then phaseCooldown = CFG.dashCooldown * 1.7
+        elseif chargePhase == 4 then phaseCooldown = CFG.dashCooldown * 2.2
+        elseif chargePhase == 5 then phaseCooldown = CFG.dashCooldown * 3.0 end
+    end
+    task.delay(phaseCooldown, function() dashCooldown = false end)
     return true
 end
 
+--// PUNCH
 local function doPunch(character)
     if punchCooldown then return end
     punchCooldown = true
 
-    local hand = character:FindFirstChild("RightHand") or character:FindFirstChild("Right Arm")
+    local stats = getPunchStats()
+    local hand  = character:FindFirstChild("RightHand") or character:FindFirstChild("Right Arm")
 
-    -- FIXED: per-phase punch animation speed
-    if tracks.punch then tracks.punch:Play(0.15, 1, getPunchSpeed()) end
+    if tracks.punch then tracks.punch:Play(0.12, 1, stats.animSpeed) end
+    playSound(CFG.punchSound, hand or character, 0.85, stats.pitch)
 
-    -- FIXED: per-phase punch sound pitch
-    local punchPitch = getPunchPitch()
-    playSound(CFG.punchSound, hand or character, 0.85, punchPitch)
-
-    -- FIXED: flame balls now guaranteed correct colors per phase
     if hand then
         local pe = Instance.new("ParticleEmitter", hand)
-        pe.Texture = "rbxasset://textures/whiteCircle.png"
+        pe.Texture       = "rbxasset://textures/whiteCircle.png"
+        pe.Size          = NumberSequence.new{
+            NumberSequenceKeypoint.new(0,   0.4),
+            NumberSequenceKeypoint.new(0.3, 2.0),
+            NumberSequenceKeypoint.new(0.7, 1.2),
+            NumberSequenceKeypoint.new(1,   0),
+        }
+        pe.Lifetime      = NumberRange.new(0.4, stats.cooldown * 0.55)
+        pe.Rate          = 500
+        pe.Speed         = NumberRange.new(6, 18)
+        pe.SpreadAngle   = Vector2.new(360, 360)
+        pe.RotSpeed      = NumberRange.new(-200, 200)
+        pe.LightEmission = 1
+        pe.Transparency  = NumberSequence.new{
+            NumberSequenceKeypoint.new(0, 0),
+            NumberSequenceKeypoint.new(0.5, 0.15),
+            NumberSequenceKeypoint.new(1, 1),
+        }
         pe.Color = getPunchFlameColor()
 
-        pe.Size         = NumberSequence.new{ NumberSequenceKeypoint.new(0, 0.5), NumberSequenceKeypoint.new(0.5, 1.4), NumberSequenceKeypoint.new(1, 0) }
-        pe.Lifetime     = NumberRange.new(0.35, 0.75)
-        pe.Rate         = 450
-        pe.Speed        = NumberRange.new(5, 14)
-        pe.SpreadAngle  = Vector2.new(360, 360)
-        pe.LightEmission = 0.85
-        pe.Transparency = NumberSequence.new{ NumberSequenceKeypoint.new(0, 0), NumberSequenceKeypoint.new(1, 1) }
+        local sp = Instance.new("ParticleEmitter", hand)
+        sp.Texture       = "rbxasset://textures/particles/sparkles.png"
+        sp.Size          = NumberSequence.new{ NumberSequenceKeypoint.new(0, 0.3), NumberSequenceKeypoint.new(0.5, 0.8), NumberSequenceKeypoint.new(1, 0) }
+        sp.Lifetime      = NumberRange.new(0.25, 0.6)
+        sp.Rate          = 200
+        sp.Speed         = NumberRange.new(10, 28)
+        sp.SpreadAngle   = Vector2.new(360, 360)
+        sp.LightEmission = 1
+        sp.Transparency  = NumberSequence.new{ NumberSequenceKeypoint.new(0, 0), NumberSequenceKeypoint.new(1, 1) }
+        sp.Color         = getPunchFlameColor()
 
-        task.delay(0.55, function()
-            if pe and pe.Parent then
-                pe.Enabled = false
-                Debris:AddItem(pe, 0.5)
-            end
+        local burstTime = stats.cooldown * 0.65
+        task.delay(burstTime, function()
+            if pe and pe.Parent then pe.Enabled = false; Debris:AddItem(pe, 0.6) end
+            if sp and sp.Parent then sp.Enabled = false; Debris:AddItem(sp, 0.6) end
         end)
     end
 
-    task.delay(CFG.punchCooldown, function() punchCooldown = false end)
+    task.delay(stats.cooldown, function() punchCooldown = false end)
 end
 
--- (rest of the script is 100% unchanged - flicker, rings, charge setup, toggleCharge, initCharacter, etc.)
-
+--// FLICKER + RING LOOPS
 local flickerThread
 local function startFlicker()
     if flickerThread then task.cancel(flickerThread) end
@@ -1292,7 +1657,7 @@ ringLoop = function(emitter, interval)
     end)
 end
 
---// CHARGE SETUP (unchanged)
+--// CHARGE SETUP
 local function setupCharge(hrp)
     if chargeAtt then chargeAtt:Destroy() end
     chargeAtt = Instance.new("Attachment", hrp)
@@ -1321,12 +1686,29 @@ local function setupCharge(hrp)
 
     chargeParticles = makeParticle(
         "rbxasset://textures/particles/sparkles.png",
-        ColorSequence.new(Color3.fromRGB(255,255,0)),
-        { NumberSequenceKeypoint.new(0,0.5), NumberSequenceKeypoint.new(0.5,1.6), NumberSequenceKeypoint.new(1,0) },
-        {0.5, 1.6}, 0, {8,16}
+        ColorSequence.new{
+            ColorSequenceKeypoint.new(0,   Color3.fromRGB(255, 255, 120)),
+            ColorSequenceKeypoint.new(0.5, Color3.fromRGB(255, 220,   0)),
+            ColorSequenceKeypoint.new(1,   Color3.fromRGB(255, 140,   0)),
+        },
+        { NumberSequenceKeypoint.new(0,0.3), NumberSequenceKeypoint.new(0.35,2.2), NumberSequenceKeypoint.new(0.7,1.4), NumberSequenceKeypoint.new(1,0) },
+        {0.6, 2.0}, 0, {10, 22}
     )
-    chargeParticles.RotSpeed = NumberRange.new(100, 320)
+    chargeParticles.RotSpeed = NumberRange.new(150, 400)
     chargeParticles.ZOffset  = 2
+
+    local chargeParticles2 = makeParticle(
+        "rbxasset://textures/particles/sparkles.png",
+        ColorSequence.new{
+            ColorSequenceKeypoint.new(0,   Color3.fromRGB(255, 255, 255)),
+            ColorSequenceKeypoint.new(0.5, Color3.fromRGB(255, 255, 100)),
+            ColorSequenceKeypoint.new(1,   Color3.fromRGB(255, 180,   0)),
+        },
+        { NumberSequenceKeypoint.new(0,0.2), NumberSequenceKeypoint.new(0.4,1.0), NumberSequenceKeypoint.new(1,0) },
+        {0.3, 1.1}, 0, {6, 14}
+    )
+    chargeParticles2.RotSpeed = NumberRange.new(-400, -120)
+    chargeParticles2.ZOffset  = 1
 
     local function makeRing(col, sizePts, life, transP)
         local pe = Instance.new("ParticleEmitter", chargeAtt)
@@ -1343,32 +1725,52 @@ local function setupCharge(hrp)
     end
 
     ringParticles = makeRing(
-        Color3.fromRGB(255,255,255),
-        { NumberSequenceKeypoint.new(0,0), NumberSequenceKeypoint.new(0.2,5), NumberSequenceKeypoint.new(1,10) },
-        1.0,
-        { NumberSequenceKeypoint.new(0,1), NumberSequenceKeypoint.new(0.2,0), NumberSequenceKeypoint.new(1,1) }
+        Color3.fromRGB(255, 255, 255),
+        { NumberSequenceKeypoint.new(0,0), NumberSequenceKeypoint.new(0.15,7), NumberSequenceKeypoint.new(0.5,12), NumberSequenceKeypoint.new(1,14) },
+        1.1,
+        { NumberSequenceKeypoint.new(0,1), NumberSequenceKeypoint.new(0.15,0), NumberSequenceKeypoint.new(0.8,0.1), NumberSequenceKeypoint.new(1,1) }
     )
     yellowRingParticles = makeRing(
-        Color3.fromRGB(255,255,0),
-        { NumberSequenceKeypoint.new(0,0), NumberSequenceKeypoint.new(0.3,4), NumberSequenceKeypoint.new(1,8) },
-        0.8,
-        { NumberSequenceKeypoint.new(0,1), NumberSequenceKeypoint.new(0.3,0.2), NumberSequenceKeypoint.new(1,1) }
+        Color3.fromRGB(255, 240, 0),
+        { NumberSequenceKeypoint.new(0,0), NumberSequenceKeypoint.new(0.2,5), NumberSequenceKeypoint.new(0.6,9), NumberSequenceKeypoint.new(1,10) },
+        0.9,
+        { NumberSequenceKeypoint.new(0,1), NumberSequenceKeypoint.new(0.2,0.1), NumberSequenceKeypoint.new(0.75,0.3), NumberSequenceKeypoint.new(1,1) }
+    )
+
+    local innerRing = makeRing(
+        Color3.fromRGB(255, 200, 60),
+        { NumberSequenceKeypoint.new(0,0), NumberSequenceKeypoint.new(0.25,3), NumberSequenceKeypoint.new(1,5) },
+        0.65,
+        { NumberSequenceKeypoint.new(0,1), NumberSequenceKeypoint.new(0.25,0.2), NumberSequenceKeypoint.new(1,1) }
     )
 
     centralGlow = Instance.new("ParticleEmitter", chargeAtt)
     centralGlow.Texture  = "rbxasset://textures/whiteCircle.png"
-    centralGlow.Color    = ColorSequence.new{ ColorSequenceKeypoint.new(0,Color3.fromRGB(255,255,0)), ColorSequenceKeypoint.new(1,Color3.fromRGB(255,200,0)) }
-    centralGlow.Size     = NumberSequence.new{ NumberSequenceKeypoint.new(0,2), NumberSequenceKeypoint.new(0.5,2.6), NumberSequenceKeypoint.new(1,2) }
-    centralGlow.Lifetime = NumberRange.new(0.5)
+    centralGlow.Color    = ColorSequence.new{
+        ColorSequenceKeypoint.new(0,   Color3.fromRGB(255, 255, 200)),
+        ColorSequenceKeypoint.new(0.4, Color3.fromRGB(255, 240,  80)),
+        ColorSequenceKeypoint.new(1,   Color3.fromRGB(255, 180,   0)),
+    }
+    centralGlow.Size     = NumberSequence.new{
+        NumberSequenceKeypoint.new(0,   3.5),
+        NumberSequenceKeypoint.new(0.4, 4.8),
+        NumberSequenceKeypoint.new(0.7, 4.0),
+        NumberSequenceKeypoint.new(1,   2.5),
+    }
+    centralGlow.Lifetime = NumberRange.new(0.4, 0.7)
     centralGlow.Rate     = 0
     centralGlow.LightEmission = 1
     centralGlow.Speed    = NumberRange.new(0)
-    centralGlow.Transparency = NumberSequence.new{ NumberSequenceKeypoint.new(0,0.5), NumberSequenceKeypoint.new(1,0.5) }
+    centralGlow.Transparency = NumberSequence.new{
+        NumberSequenceKeypoint.new(0,   0.3),
+        NumberSequenceKeypoint.new(0.5, 0.1),
+        NumberSequenceKeypoint.new(1,   0.6),
+    }
 
     for _, b in ipairs(lightningBeams) do
         if b.beam then b.beam:Destroy() end
-        if b.a0 then b.a0:Destroy() end
-        if b.a1 then b.a1:Destroy() end
+        if b.a0   then b.a0:Destroy()  end
+        if b.a1   then b.a1:Destroy()  end
     end
     lightningBeams = {}
 
@@ -1378,14 +1780,27 @@ local function setupCharge(hrp)
 end
 
 local chargeSoundThread
+local function getChargeSoundPitch()
+    if chargePhase == 5 then return 0.55
+    elseif chargePhase == 4 then return 0.50
+    elseif chargePhase == 3 then return 0.70
+    else return 1.0 end
+end
+
 local function chargeSoundLoop()
     if chargeSoundThread then task.cancel(chargeSoundThread) end
     chargeSoundThread = task.spawn(function()
         while isCharging do
-            if chargeSoundA then chargeSoundA:Play() end
+            if chargeSoundA then
+                chargeSoundA.PlaybackSpeed = getChargeSoundPitch()
+                chargeSoundA:Play()
+            end
             task.wait(CFG.chargeLength - CFG.crossfade)
             if not isCharging then break end
-            if chargeSoundB then chargeSoundB:Play() end
+            if chargeSoundB then
+                chargeSoundB.PlaybackSpeed = getChargeSoundPitch()
+                chargeSoundB:Play()
+            end
             task.wait(CFG.chargeLength - CFG.crossfade)
         end
     end)
@@ -1395,14 +1810,12 @@ end
 local function startBackgroundMusic(hrp)
     if musicSound and musicSound.Parent then musicSound:Destroy() end
     musicSound = Instance.new("Sound")
-    musicSound.SoundId = "rbxassetid://93932484780481"
-    musicSound.Volume = 0.9
+    musicSound.SoundId      = "rbxassetid://93932484780481"
+    musicSound.Volume       = 0.9
     musicSound.PlaybackSpeed = 0.12
-    musicSound.Looped = true
-    musicSound.Parent = hrp
-    if toggles.music then
-        musicSound:Play()
-    end
+    musicSound.Looped       = true
+    musicSound.Parent       = hrp
+    if toggles.music then musicSound:Play() end
 end
 
 --// PASSIVE DASH RECHARGE
@@ -1412,14 +1825,14 @@ local function startPassiveDashRecharge()
     passiveDashConn = RunService.Heartbeat:Connect(function()
         if isCharging or not hasPhase5Unlocked then return end
         if tick() >= nextRecharge then
-            dashCount = math.min(dashCount + 1, currentMaxDashes)
+            dashCount    = math.min(dashCount + 1, currentMaxDashes)
             nextRecharge = tick() + CFG.phase5PassiveRecharge
             updateDashBar()
         end
     end)
 end
 
---// TOGGLE CHARGE (unchanged)
+--// TOGGLE CHARGE
 local camShakeConn, charShakeConn
 
 local function toggleCharge(hrp)
@@ -1432,7 +1845,7 @@ local function toggleCharge(hrp)
     isCharging = not isCharging
 
     if isCharging then
-        persistentSunColor = CFG.sunColor
+        persistentSunColor  = CFG.sunColor
         persistentLightColor = CFG.sunColor
 
         if sunOrb then
@@ -1443,29 +1856,34 @@ local function toggleCharge(hrp)
                 sunFire.Color = ColorSequence.new{
                     ColorSequenceKeypoint.new(0,   Color3.fromRGB(255, 255, 80)),
                     ColorSequenceKeypoint.new(0.4, Color3.fromRGB(255, 210, 60)),
-                    ColorSequenceKeypoint.new(1,   Color3.fromRGB(255, 50,  0)),
+                    ColorSequenceKeypoint.new(1,   Color3.fromRGB(255,  50,  0)),
                 }
+                updateOrbParticleColors(
+                    { ColorSequenceKeypoint.new(0, Color3.fromRGB(255,255,80)), ColorSequenceKeypoint.new(0.4, Color3.fromRGB(255,210,60)), ColorSequenceKeypoint.new(1, Color3.fromRGB(255,50,0)) },
+                    { ColorSequenceKeypoint.new(0, Color3.fromRGB(255,255,200)), ColorSequenceKeypoint.new(1, Color3.fromRGB(255,200,50)) },
+                    { ColorSequenceKeypoint.new(0, Color3.fromRGB(255,230,80)), ColorSequenceKeypoint.new(0.5, Color3.fromRGB(255,120,0)), ColorSequenceKeypoint.new(1, Color3.fromRGB(200,40,0)) }
+                )
             end
         end
 
-        originalWalkSpeed = humanoid.WalkSpeed
-        originalAnchored  = hrp.Anchored
-        chargeBaseCF      = hrp.CFrame
+        originalWalkSpeed    = humanoid.WalkSpeed
+        originalAnchored     = hrp.Anchored
+        chargeBaseCF         = hrp.CFrame
 
-        chargePhase = 1
-        fullPowerStartTime = tick()
-        phase3StartTime = 0
-        phase4StartTime = 0
+        chargePhase            = 1
+        fullPowerStartTime     = tick()
+        phase3StartTime        = 0
+        phase4StartTime        = 0
         phase2RandomTriggerTime = 0
 
         updateSunGodTitle(chargePhase)
 
         playOnly(tracks.charge)
 
-        chargeParticles.Enabled       = true
-        ringParticles.Enabled         = true
-        yellowRingParticles.Enabled   = true
-        centralGlow.Enabled           = true
+        chargeParticles.Enabled     = true
+        ringParticles.Enabled       = true
+        yellowRingParticles.Enabled = true
+        centralGlow.Enabled         = true
         for _, b in ipairs(lightningBeams) do if b.beam then b.beam.Enabled = true end end
 
         startFlicker()
@@ -1486,8 +1904,8 @@ local function toggleCharge(hrp)
             if camShakeConn then camShakeConn:Disconnect() end
             camShakeConn = RunService.RenderStepped:Connect(function()
                 if not isCharging then return end
-                local t   = tick()
-                local mult     = 0.8
+                local t       = tick()
+                local mult    = 0.8
                 local shakeAmt = (chargePhase == 5 and 0.009) or (chargePhase == 4 and 0.023) or (chargePhase == 3 and 0.038) or (chargePhase == 2 and 0.055) or 0.032
                 camera.CFrame = camera.CFrame * CFrame.new(
                     math.sin(t * 23 * mult) * shakeAmt,
@@ -1526,15 +1944,14 @@ local function toggleCharge(hrp)
                         hrp.CFrame = chargeBaseCF * CFrame.new(tx, ty, tz)
                     end
                 else
-                    local mult = (chargePhase == 2 and 2) or 1
-                    local baseAmt = 0.09
-                    local extraShake = (chargePhase == 2 and 0.28) or 0
-                    local flyBob = (chargePhase >= 2) and math.sin(t * 1.15) * 1.35 or 0
-
+                    local mult     = (chargePhase == 2 and 2) or 1
+                    local baseAmt  = 0.09
+                    local extra    = (chargePhase == 2 and 0.28) or 0
+                    local flyBob   = (chargePhase >= 2) and math.sin(t * 1.15) * 1.35 or 0
                     hrp.CFrame = chargeBaseCF * CFrame.new(
-                        math.sin(t * 21 * mult) * (baseAmt + extraShake),
-                        math.sin(t * 26 * mult) * (baseAmt + extraShake) + flyBob,
-                        math.sin(t * 23 * mult) * (baseAmt + extraShake)
+                        math.sin(t * 21 * mult) * (baseAmt + extra),
+                        math.sin(t * 26 * mult) * (baseAmt + extra) + flyBob,
+                        math.sin(t * 23 * mult) * (baseAmt + extra)
                     )
                 end
             end)
@@ -1551,8 +1968,8 @@ local function toggleCharge(hrp)
         updateChargeBar()
     else
         resetEnhancements()
-        nextRecharge = math.huge
-        chargeBaseCF = nil
+        nextRecharge           = math.huge
+        chargeBaseCF           = nil
         phase2RandomTriggerTime = 0
 
         if camShakeConn  then camShakeConn:Disconnect();  camShakeConn  = nil end
@@ -1570,9 +1987,9 @@ local function toggleCharge(hrp)
         chargeSoundA:Stop(); chargeSoundA.Volume = 0
         chargeSoundB:Stop(); chargeSoundB.Volume = 0
 
-        if tracks.charge then pcall(tracks.charge.Stop, tracks.charge, 0.2) end
-        if tracks.fullCharge then pcall(tracks.fullCharge.Stop, tracks.fullCharge, 0.2) end
-        if tracks.ultraCharge then pcall(tracks.ultraCharge.Stop, tracks.ultraCharge, 0.2) end
+        if tracks.charge          then pcall(tracks.charge.Stop,          tracks.charge,          0.2) end
+        if tracks.fullCharge      then pcall(tracks.fullCharge.Stop,      tracks.fullCharge,      0.2) end
+        if tracks.ultraCharge     then pcall(tracks.ultraCharge.Stop,     tracks.ultraCharge,     0.2) end
         if tracks.superUltraCharge then pcall(tracks.superUltraCharge.Stop, tracks.superUltraCharge, 0.2) end
 
         playOnly(tracks.idle)
@@ -1601,7 +2018,7 @@ local function toggleCharge(hrp)
     end
 end
 
---// NO FALL DAMAGE (unchanged)
+--// NO FALL DAMAGE
 local function enableNoFall(char)
     local humanoid = char:WaitForChild("Humanoid", 5)
     local root     = char:WaitForChild("HumanoidRootPart", 5)
@@ -1641,34 +2058,38 @@ local function enableNoFall(char)
     end)
 end
 
---// CHARACTER INIT (unchanged)
+--// CHARACTER INIT
+local ambientConn
 local function initCharacter(char)
     disconnectAll(connections)
-    if camShakeConn  then camShakeConn:Disconnect();  camShakeConn  = nil end
-    if charShakeConn then charShakeConn:Disconnect(); charShakeConn = nil end
-    if sunConn       then sunConn:Disconnect();       sunConn       = nil end
+    if camShakeConn      then camShakeConn:Disconnect();      camShakeConn      = nil end
+    if charShakeConn     then charShakeConn:Disconnect();     charShakeConn     = nil end
+    if sunConn           then sunConn:Disconnect();           sunConn           = nil end
     if phase4FlashThread then task.cancel(phase4FlashThread); phase4FlashThread = nil end
-    if passiveDashConn then passiveDashConn:Disconnect(); passiveDashConn = nil end
+    if phase5FlashThread then task.cancel(phase5FlashThread); phase5FlashThread = nil end
+    if phase5FloatConn   then phase5FloatConn:Disconnect();   phase5FloatConn   = nil end
+    if passiveDashConn   then passiveDashConn:Disconnect();   passiveDashConn   = nil end
+    if ambientConn       then ambientConn:Disconnect();       ambientConn       = nil end
 
     for _, t in pairs(tracks) do if t and t.Stop then pcall(t.Stop, t) end end
     tracks = {}
 
-    if sunOrb then sunOrb:Destroy(); sunOrb = nil end
+    if sunOrb    then sunOrb:Destroy();    sunOrb    = nil end
     if chargeAtt then chargeAtt:Destroy(); chargeAtt = nil end
     for _, b in ipairs(lightningBeams) do
         if b.beam then b.beam:Destroy() end
-        if b.a0 then b.a0:Destroy() end
-        if b.a1 then b.a1:Destroy() end
+        if b.a0   then b.a0:Destroy()  end
+        if b.a1   then b.a1:Destroy()  end
     end
     lightningBeams = {}
 
-    isDashing      = false
-    isCharging     = false
-    fullPower      = false
-    chargePhase    = 1
-    fullPowerStartTime = 0
-    phase3StartTime = 0
-    phase4StartTime = 0
+    isDashing              = false
+    isCharging             = false
+    fullPower              = false
+    chargePhase            = 1
+    fullPowerStartTime     = 0
+    phase3StartTime        = 0
+    phase4StartTime        = 0
     phase2RandomTriggerTime = 0
 
     if not hasPhase4Unlocked then
@@ -1676,11 +2097,11 @@ local function initCharacter(char)
         currentDashRecharge = CFG.dashRecharge
         rechargeInterval    = currentDashRecharge / currentMaxDashes
     end
-    dashCount      = currentMaxDashes
-    dashCooldown   = false
-    punchCooldown  = false
-    nextRecharge   = math.huge
-    chargeBaseCF   = nil
+    dashCount     = currentMaxDashes
+    dashCooldown  = false
+    punchCooldown = false
+    nextRecharge  = math.huge
+    chargeBaseCF  = nil
     chargeParticles, ringParticles, yellowRingParticles, centralGlow = nil, nil, nil, nil
     chargeSoundA, chargeSoundB = nil, nil
 
@@ -1698,18 +2119,129 @@ local function initCharacter(char)
         startPassiveDashRecharge()
     end
 
-    tracks.idle            = loadAnim(humanoid, ANIM.idle,            true,  Enum.AnimationPriority.Idle)
-    tracks.walk            = loadAnim(humanoid, ANIM.walk,            true,  Enum.AnimationPriority.Movement)
-    tracks.jump            = loadAnim(humanoid, ANIM.jump,            false, Enum.AnimationPriority.Action)
-    tracks.dash            = loadAnim(humanoid, ANIM.dash,            false, Enum.AnimationPriority.Action4)
-    tracks.punch           = loadAnim(humanoid, ANIM.punch,           false, Enum.AnimationPriority.Action4)
-    tracks.charge          = loadAnim(humanoid, ANIM.charge,          true,  Enum.AnimationPriority.Action4)
-    tracks.fullCharge      = loadAnim(humanoid, ANIM.fullCharge,      true,  Enum.AnimationPriority.Action4)
-    tracks.ultraCharge     = loadAnim(humanoid, ANIM.ultraCharge,     true,  Enum.AnimationPriority.Action4)
-    tracks.superUltraCharge = loadAnim(humanoid, ANIM.superUltraCharge, true, Enum.AnimationPriority.Action4)
-    tracks.divineAscension  = loadAnim(humanoid, ANIM.divineAscension,  true, Enum.AnimationPriority.Action4)
+    tracks.idle             = loadAnim(humanoid, ANIM.idle,             true,  Enum.AnimationPriority.Idle)
+    tracks.walk             = loadAnim(humanoid, ANIM.walk,             true,  Enum.AnimationPriority.Movement)
+    tracks.jump             = loadAnim(humanoid, ANIM.jump,             false, Enum.AnimationPriority.Action)
+    tracks.dash             = loadAnim(humanoid, ANIM.dash,             false, Enum.AnimationPriority.Action4)
+    tracks.punch            = loadAnim(humanoid, ANIM.punch,            false, Enum.AnimationPriority.Action4)
+    tracks.charge           = loadAnim(humanoid, ANIM.charge,           true,  Enum.AnimationPriority.Action4)
+    tracks.fullCharge       = loadAnim(humanoid, ANIM.fullCharge,       true,  Enum.AnimationPriority.Action4)
+    tracks.ultraCharge      = loadAnim(humanoid, ANIM.ultraCharge,      true,  Enum.AnimationPriority.Action4)
+    tracks.superUltraCharge = loadAnim(humanoid, ANIM.superUltraCharge, true,  Enum.AnimationPriority.Action4)
+    tracks.divineAscension  = loadAnim(humanoid, ANIM.divineAscension,  true,  Enum.AnimationPriority.Action4)
 
     tracks.idle:Play()
+
+    --// AMBIENT EFFECTS
+    local lastAmbientTime  = 0
+    local nextAmbientDelay = 3 + math.random() * 4
+
+    local function getAmbientPhaseColor()
+        return DASH_BALL_COLORS[chargePhase] or DASH_BALL_COLORS[1]
+    end
+
+    local function doAmbientHandFire(character)
+        local hands = {}
+        local rh = character:FindFirstChild("RightHand") or character:FindFirstChild("Right Arm")
+        local lh = character:FindFirstChild("LeftHand")  or character:FindFirstChild("Left Arm")
+        if rh then table.insert(hands, rh) end
+        if lh then table.insert(hands, lh) end
+        if #hands == 0 then return end
+
+        local targets = (math.random() < 0.4) and hands or { hands[math.random(1, #hands)] }
+        local cols    = getAmbientPhaseColor()
+
+        for _, hand in ipairs(targets) do
+            local pe = Instance.new("ParticleEmitter", hand)
+            pe.Texture       = "rbxasset://textures/particles/fire_main.dds"
+            pe.Size          = NumberSequence.new{
+                NumberSequenceKeypoint.new(0,   0.2),
+                NumberSequenceKeypoint.new(0.3, 0.9),
+                NumberSequenceKeypoint.new(1,   0),
+            }
+            pe.Lifetime      = NumberRange.new(0.3, 0.7)
+            pe.Rate          = 180
+            pe.Speed         = NumberRange.new(4, 12)
+            pe.SpreadAngle   = Vector2.new(80, 80)
+            pe.RotSpeed      = NumberRange.new(-160, 160)
+            pe.LightEmission = 1
+            pe.Transparency  = NumberSequence.new{
+                NumberSequenceKeypoint.new(0, 0),
+                NumberSequenceKeypoint.new(0.6, 0.3),
+                NumberSequenceKeypoint.new(1, 1),
+            }
+            pe.Color = ColorSequence.new{
+                ColorSequenceKeypoint.new(0,   cols[1]),
+                ColorSequenceKeypoint.new(0.5, cols[2]),
+                ColorSequenceKeypoint.new(1,   cols[3]),
+            }
+            local duration = 0.4 + math.random() * 0.5
+            task.delay(duration, function()
+                if pe and pe.Parent then pe.Enabled = false; Debris:AddItem(pe, 0.5) end
+            end)
+        end
+    end
+
+    local function doAmbientLightning(hrp2)
+        local count = 1 + math.random(0, 2)
+        local cols  = BOLT_COLORS[chargePhase] or BOLT_COLORS[1]
+        for i = 1, count do
+            task.delay(i * 0.07, function()
+                if not hrp2 or not hrp2.Parent then return end
+                local b = makeBolt(hrp2)
+                if b.beam then
+                    b.beam.Color  = ColorSequence.new{
+                        ColorSequenceKeypoint.new(0, cols[1]),
+                        ColorSequenceKeypoint.new(1, cols[2]),
+                    }
+                    b.beam.Width0        = 0.35 + chargePhase * 0.12
+                    b.beam.Width1        = 0.08 + chargePhase * 0.04
+                    b.beam.LightEmission = 1 + chargePhase * 0.3
+                    task.spawn(function()
+                        for _ = 1, 4 do
+                            task.wait(0.055)
+                            if b.beam and b.beam.Parent then
+                                b.beam.Transparency = NumberSequence.new(math.random(0, 60) / 100)
+                                if b.a1 and b.a1.Parent then
+                                    b.a1.Position = Vector3.new(
+                                        math.random(-7, 7),
+                                        math.random(-4, 10),
+                                        math.random(-7, 7)
+                                    )
+                                end
+                            end
+                        end
+                        if b.beam then b.beam:Destroy() end
+                        if b.a0   then b.a0:Destroy()  end
+                        if b.a1   then b.a1:Destroy()  end
+                    end)
+                end
+            end)
+        end
+    end
+
+    ambientConn = RunService.Heartbeat:Connect(function()
+        if isCharging then return end
+        local now = tick()
+        if now - lastAmbientTime < nextAmbientDelay then return end
+        lastAmbientTime  = now
+        nextAmbientDelay = 2.5 + math.random() * 4.5
+
+        local char2 = lp.Character
+        if not char2 then return end
+        local hrp2 = char2:FindFirstChild("HumanoidRootPart")
+        if not hrp2 then return end
+
+        local roll = math.random()
+        if roll < 0.5 then
+            doAmbientHandFire(char2)
+        elseif roll < 0.85 then
+            doAmbientLightning(hrp2)
+        else
+            doAmbientHandFire(char2)
+            doAmbientLightning(hrp2)
+        end
+    end)
 
     connections.run = humanoid.Running:Connect(function(speed)
         if isDashing or isCharging then return end
@@ -1738,7 +2270,6 @@ local function initCharacter(char)
     connections.phaseProgression = RunService.Heartbeat:Connect(function()
         if not isCharging then return end
         local now = tick()
-
         if chargePhase == 1 and not fullPower and phase2RandomTriggerTime > 0 and now >= phase2RandomTriggerTime then
             enterPhase2()
         elseif chargePhase == 2 and now - fullPowerStartTime >= 10 then
