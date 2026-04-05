@@ -91,9 +91,10 @@ local toggles = {
     camShake    = true,
     charShake   = true,
     music       = true,
+    grieferMode = false,
 }
 
---// PHASE NAMES (upgraded)
+--// PHASE NAMES
 local PHASE_NAMES = {
     [1] = "☀  Eternal Sovereign",
     [2] = "🔥  Inferno Awakening",
@@ -102,7 +103,6 @@ local PHASE_NAMES = {
     [5] = "✦  Divine Transcendence",
 }
 
---// PHASE ROMAN NUMERALS (for subtitle)
 local PHASE_ROMAN = {
     [1] = "P H A S E   I",
     [2] = "P H A S E   I I",
@@ -111,7 +111,6 @@ local PHASE_ROMAN = {
     [5] = "P H A S E   V",
 }
 
---// TITLE GUI COLORS (per phase)
 local PHASE_TITLE_COLOR = {
     [1] = Color3.fromRGB(255, 215,   0),
     [2] = Color3.fromRGB(255, 120,  20),
@@ -141,7 +140,65 @@ local PHASE_SHIMMER_COLOR = {
     [5] = Color3.fromRGB(255, 255, 255),
 }
 
---// BOLT COLORS (per phase)
+--// CHARGE PARTICLE 2 COLORS (per phase) — secondary sparkle layer
+local CHARGE_PARTICLES2_COLORS = {
+    [1] = ColorSequence.new{
+        ColorSequenceKeypoint.new(0,   Color3.fromRGB(255, 255, 255)),
+        ColorSequenceKeypoint.new(0.5, Color3.fromRGB(255, 255, 120)),
+        ColorSequenceKeypoint.new(1,   Color3.fromRGB(255, 200,   0)),
+    },
+    [2] = ColorSequence.new{
+        ColorSequenceKeypoint.new(0,   Color3.fromRGB(255, 220, 180)),
+        ColorSequenceKeypoint.new(0.5, Color3.fromRGB(255, 140,  40)),
+        ColorSequenceKeypoint.new(1,   Color3.fromRGB(220,  60,   0)),
+    },
+    [3] = ColorSequence.new{
+        ColorSequenceKeypoint.new(0,   Color3.fromRGB(200, 245, 255)),
+        ColorSequenceKeypoint.new(0.5, Color3.fromRGB(100, 210, 255)),
+        ColorSequenceKeypoint.new(1,   Color3.fromRGB( 30, 140, 255)),
+    },
+    [4] = ColorSequence.new{
+        ColorSequenceKeypoint.new(0,   Color3.fromRGB(255, 200, 255)),
+        ColorSequenceKeypoint.new(0.5, Color3.fromRGB(220,  80, 255)),
+        ColorSequenceKeypoint.new(1,   Color3.fromRGB(150,   0, 220)),
+    },
+    [5] = ColorSequence.new{
+        ColorSequenceKeypoint.new(0,   Color3.fromRGB(255, 255, 255)),
+        ColorSequenceKeypoint.new(0.5, Color3.fromRGB(230, 245, 255)),
+        ColorSequenceKeypoint.new(1,   Color3.fromRGB(190, 215, 255)),
+    },
+}
+
+--// EMBERS COLORS (per phase)
+local EMBERS_COLORS = {
+    [1] = ColorSequence.new{
+        ColorSequenceKeypoint.new(0,   Color3.fromRGB(255, 240, 100)),
+        ColorSequenceKeypoint.new(0.5, Color3.fromRGB(255, 160,  20)),
+        ColorSequenceKeypoint.new(1,   Color3.fromRGB(200,  60,   0)),
+    },
+    [2] = ColorSequence.new{
+        ColorSequenceKeypoint.new(0,   Color3.fromRGB(255, 180,  60)),
+        ColorSequenceKeypoint.new(0.5, Color3.fromRGB(240,  90,   0)),
+        ColorSequenceKeypoint.new(1,   Color3.fromRGB(180,  20,   0)),
+    },
+    [3] = ColorSequence.new{
+        ColorSequenceKeypoint.new(0,   Color3.fromRGB(180, 240, 255)),
+        ColorSequenceKeypoint.new(0.5, Color3.fromRGB( 60, 180, 255)),
+        ColorSequenceKeypoint.new(1,   Color3.fromRGB( 10, 100, 220)),
+    },
+    [4] = ColorSequence.new{
+        ColorSequenceKeypoint.new(0,   Color3.fromRGB(255, 160, 255)),
+        ColorSequenceKeypoint.new(0.5, Color3.fromRGB(200,  40, 255)),
+        ColorSequenceKeypoint.new(1,   Color3.fromRGB(120,   0, 200)),
+    },
+    [5] = ColorSequence.new{
+        ColorSequenceKeypoint.new(0,   Color3.fromRGB(255, 255, 255)),
+        ColorSequenceKeypoint.new(0.5, Color3.fromRGB(210, 235, 255)),
+        ColorSequenceKeypoint.new(1,   Color3.fromRGB(170, 210, 255)),
+    },
+}
+
+
 local BOLT_COLORS = {
     [1] = { Color3.fromRGB(255, 240,  80), Color3.fromRGB(255, 180,   0) },
     [2] = { Color3.fromRGB(255, 140,  50), Color3.fromRGB(200,  45,   0) },
@@ -188,6 +245,59 @@ local DASH_BALL_COLORS = {
     [5] = { Color3.fromRGB(255, 255, 255), Color3.fromRGB(210, 235, 255), Color3.fromRGB(170, 210, 255) },
 }
 
+--// SUN ORB FIRE COLORS per phase
+local SUN_ORB_FIRE_COLORS = {
+    [1] = ColorSequence.new{
+        ColorSequenceKeypoint.new(0,   Color3.fromRGB(255, 240, 100)),
+        ColorSequenceKeypoint.new(0.5, Color3.fromRGB(255, 150,  20)),
+        ColorSequenceKeypoint.new(1,   Color3.fromRGB(180,  30,   0)),
+    },
+    [2] = ColorSequence.new{
+        ColorSequenceKeypoint.new(0,   Color3.fromRGB(255, 140, 50)),
+        ColorSequenceKeypoint.new(0.5, Color3.fromRGB(255,  80,  0)),
+        ColorSequenceKeypoint.new(1,   Color3.fromRGB(160,  20,  0)),
+    },
+    [3] = ColorSequence.new{
+        ColorSequenceKeypoint.new(0,   Color3.fromRGB(120, 230, 255)),
+        ColorSequenceKeypoint.new(0.5, Color3.fromRGB( 50, 170, 255)),
+        ColorSequenceKeypoint.new(1,   Color3.fromRGB( 10, 100, 220)),
+    },
+    [4] = ColorSequence.new{
+        ColorSequenceKeypoint.new(0,   Color3.fromRGB(255, 130, 255)),
+        ColorSequenceKeypoint.new(0.5, Color3.fromRGB(200,  40, 255)),
+        ColorSequenceKeypoint.new(1,   Color3.fromRGB(120,   0, 210)),
+    },
+    [5] = ColorSequence.new{
+        ColorSequenceKeypoint.new(0,   Color3.fromRGB(255, 255, 255)),
+        ColorSequenceKeypoint.new(0.5, Color3.fromRGB(215, 238, 255)),
+        ColorSequenceKeypoint.new(1,   Color3.fromRGB(170, 205, 255)),
+    },
+}
+
+--// SUN ORB CORONA COLORS per phase (halo ring around the orb)
+local SUN_ORB_CORONA_COLORS = {
+    [1] = ColorSequence.new{
+        ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 255, 200)),
+        ColorSequenceKeypoint.new(1, Color3.fromRGB(255, 160,   0)),
+    },
+    [2] = ColorSequence.new{
+        ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 200, 100)),
+        ColorSequenceKeypoint.new(1, Color3.fromRGB(220,  60,   0)),
+    },
+    [3] = ColorSequence.new{
+        ColorSequenceKeypoint.new(0, Color3.fromRGB(200, 240, 255)),
+        ColorSequenceKeypoint.new(1, Color3.fromRGB( 30, 140, 255)),
+    },
+    [4] = ColorSequence.new{
+        ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 180, 255)),
+        ColorSequenceKeypoint.new(1, Color3.fromRGB(160,   0, 255)),
+    },
+    [5] = ColorSequence.new{
+        ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 255, 255)),
+        ColorSequenceKeypoint.new(1, Color3.fromRGB(200, 225, 255)),
+    },
+}
+
 --// STATE
 local tracks         = {}
 local dashCooldown   = false
@@ -212,19 +322,19 @@ local rechargeInterval      = CFG.dashRecharge / CFG.maxDashes
 local originalWalkSpeed = 16
 local originalAnchored  = false
 
-local sunOrb, sunFire, sunInnerSpark, sunEmbers
+-- sunOrb parts stored so updateSunOrbPhase can reach the corona emitter too
+local sunOrb, sunFire, sunCorona
 local sunConn
 local transitionStart    = 0
 local wasChargingLast    = false
 
 local chargeAtt
 local chargeSoundA, chargeSoundB
-local chargeParticles, ringParticles, yellowRingParticles, centralGlow
+local chargeParticles, chargeParticles2, embers, ringParticles, yellowRingParticles, centralGlow
 local lightningBeams = {}
 local titleBillboard
 local titleTextLabel
 
--- Separate table to hold title GUI sub-references (avoids Roblox Instance property issues)
 local titleRefs = {
     stroke      = nil,
     phaseLabel  = nil,
@@ -239,6 +349,7 @@ local phase2RandomTriggerTime = 0
 
 local persistentSunColor  = CFG.sunColor
 local persistentLightColor = CFG.sunColor
+local orbPhase = 1   -- tracks the last phase reached; persists after charge ends
 
 --// SCREEN FLASH
 local flashFrame
@@ -290,7 +401,7 @@ local function disconnectAll(tbl)
     end
 end
 
---// LIGHTNING BOLT (uses current chargePhase for colors)
+--// LIGHTNING BOLT
 local function makeBolt(hrp)
     local cols = BOLT_COLORS[chargePhase] or BOLT_COLORS[1]
     local a0 = Instance.new("Attachment", hrp); a0.Position = Vector3.new(0, 2, 0)
@@ -315,7 +426,7 @@ local function makeBolt(hrp)
     return { beam = beam, a0 = a0, a1 = a1 }
 end
 
---// DYNAMIC SUN GOD TITLE (new 10x better version)
+--// TITLE GUI
 local function updateSunGodTitle(phase)
     if not titleTextLabel or not titleTextLabel.Parent then return end
     titleTextLabel.Text = PHASE_NAMES[phase] or PHASE_NAMES[1]
@@ -346,7 +457,6 @@ end
 
 local function createTitle(char)
     if titleBillboard then titleBillboard:Destroy() end
-    -- Clear old refs
     titleRefs.stroke     = nil
     titleRefs.phaseLabel = nil
     titleRefs.shimmer    = nil
@@ -364,7 +474,6 @@ local function createTitle(char)
     bb.MaxDistance    = 2000
     bb.Parent         = head
 
-    -- Dark backing panel
     local backing = Instance.new("Frame", bb)
     backing.Size                   = UDim2.new(1, 0, 1, 0)
     backing.BackgroundColor3       = Color3.fromRGB(5, 4, 10)
@@ -372,7 +481,6 @@ local function createTitle(char)
     backing.BorderSizePixel        = 0
     Instance.new("UICorner", backing).CornerRadius = UDim.new(0, 16)
 
-    -- Neon border stroke
     local stroke = Instance.new("UIStroke", backing)
     stroke.Color           = Color3.fromRGB(255, 215, 0)
     stroke.Thickness       = 2.5
@@ -380,7 +488,6 @@ local function createTitle(char)
     stroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
     titleRefs.stroke = stroke
 
-    -- Top shimmer line
     local shimmer = Instance.new("Frame", backing)
     shimmer.Size                   = UDim2.new(0.85, 0, 0, 2)
     shimmer.Position               = UDim2.new(0.075, 0, 0, 7)
@@ -390,7 +497,6 @@ local function createTitle(char)
     Instance.new("UICorner", shimmer).CornerRadius = UDim.new(1, 0)
     titleRefs.shimmer = shimmer
 
-    -- Phase label (small caps)
     local phaseLabel = Instance.new("TextLabel", bb)
     phaseLabel.Size                   = UDim2.new(1, 0, 0, 28)
     phaseLabel.Position               = UDim2.new(0, 0, 0, 10)
@@ -404,7 +510,6 @@ local function createTitle(char)
     phaseLabel.TextTransparency       = 0.05
     titleRefs.phaseLabel = phaseLabel
 
-    -- Main title
     local txt = Instance.new("TextLabel", bb)
     txt.Size                   = UDim2.new(1, 0, 0, 62)
     txt.Position               = UDim2.new(0, 0, 0, 34)
@@ -417,12 +522,10 @@ local function createTitle(char)
     txt.TextSize               = 36
     txt.TextScaled             = false
 
-    -- Glow pulse
     TweenService:Create(txt, TweenInfo.new(1.4, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut, -1, true), {
         TextTransparency       = 0.10,
         TextStrokeTransparency = 0.35,
     }):Play()
-    -- Shimmer pulse
     TweenService:Create(shimmer, TweenInfo.new(2.2, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut, -1, true), {
         BackgroundTransparency = 0.78,
     }):Play()
@@ -431,38 +534,33 @@ local function createTitle(char)
     titleTextLabel = txt
 end
 
---// PHASE ENHANCEMENTS
-local function updateOrbParticleColors(fireColors, sparkColors, emberColors)
-    if sunFire       then sunFire.Color       = ColorSequence.new(fireColors)  end
-    if sunInnerSpark then sunInnerSpark.Color  = ColorSequence.new(sparkColors) end
-    if sunEmbers     then sunEmbers.Color      = ColorSequence.new(emberColors) end
+--// SUN ORB — updateSunOrbPhase now also updates the corona emitter color
+local function updateSunOrbPhase(phase)
+    if not sunOrb then return end
+    local fireCol   = SUN_ORB_FIRE_COLORS[phase]   or SUN_ORB_FIRE_COLORS[1]
+    local coronaCol = SUN_ORB_CORONA_COLORS[phase]  or SUN_ORB_CORONA_COLORS[1]
+
+    if sunFire   then sunFire.Color   = fireCol   end
+    if sunCorona then sunCorona.Color = coronaCol end
+
+    tw(sunOrb, 0.6, { Color = persistentSunColor })
+    local light = sunOrb:FindFirstChildWhichIsA("PointLight")
+    if light then
+        local brightness = (phase == 5 and 10) or (phase == 4 and 7) or (phase == 3 and 5.5) or 4.5
+        tw(light, 0.6, { Color = persistentLightColor, Brightness = brightness })
+    end
 end
 
+--// PHASE TRANSITIONS
 local function enterPhase2()
     fullPower = true
     chargePhase = 2
+    orbPhase = 2
     fullPowerStartTime = tick()
 
     persistentSunColor  = Color3.fromRGB(255, 85, 0)
     persistentLightColor = Color3.fromRGB(255, 85, 0)
-
-    if sunOrb then
-        tw(sunOrb, 0.6, { Color = persistentSunColor })
-        local light = sunOrb:FindFirstChildWhichIsA("PointLight")
-        if light then tw(light, 0.6, { Color = persistentLightColor, Brightness = 6 }) end
-        if sunFire then
-            sunFire.Color = ColorSequence.new{
-                ColorSequenceKeypoint.new(0,   Color3.fromRGB(255, 140, 50)),
-                ColorSequenceKeypoint.new(0.4, Color3.fromRGB(255, 100, 30)),
-                ColorSequenceKeypoint.new(1,   Color3.fromRGB(200, 45,  0)),
-            }
-        end
-        updateOrbParticleColors(
-            { ColorSequenceKeypoint.new(0, Color3.fromRGB(255,140,50)), ColorSequenceKeypoint.new(0.4, Color3.fromRGB(255,100,30)), ColorSequenceKeypoint.new(1, Color3.fromRGB(200,45,0)) },
-            { ColorSequenceKeypoint.new(0, Color3.fromRGB(255,200,100)), ColorSequenceKeypoint.new(1, Color3.fromRGB(255,80,0)) },
-            { ColorSequenceKeypoint.new(0, Color3.fromRGB(255,160,40)), ColorSequenceKeypoint.new(0.5, Color3.fromRGB(220,80,0)), ColorSequenceKeypoint.new(1, Color3.fromRGB(160,20,0)) }
-        )
-    end
+    updateSunOrbPhase(2)
 
     if tracks.charge and tracks.charge.IsPlaying then tracks.charge:Stop(0.12) end
     if tracks.fullCharge then tracks.fullCharge:Play(0.18, 1, 1.1) end
@@ -474,16 +572,27 @@ local function enterPhase2()
 
     if chargeParticles then
         chargeParticles:Emit(400)
+        chargeParticles.Color = ColorSequence.new{
+            ColorSequenceKeypoint.new(0,   Color3.fromRGB(255, 200,  80)),
+            ColorSequenceKeypoint.new(0.4, Color3.fromRGB(255, 120,  20)),
+            ColorSequenceKeypoint.new(1,   Color3.fromRGB(200,  50,   0)),
+        }
         TweenService:Create(chargeParticles, TweenInfo.new(0.5), { Rate = 3400 }):Play()
     end
+    if chargeParticles2 then chargeParticles2.Color = CHARGE_PARTICLES2_COLORS[2] end
+    if embers           then embers.Color           = EMBERS_COLORS[2]           end
     if centralGlow then
+        centralGlow.Color = ColorSequence.new{
+            ColorSequenceKeypoint.new(0,   Color3.fromRGB(255, 220, 120)),
+            ColorSequenceKeypoint.new(0.4, Color3.fromRGB(255, 140,  30)),
+            ColorSequenceKeypoint.new(1,   Color3.fromRGB(200,  60,   0)),
+        }
         centralGlow:Emit(18)
         TweenService:Create(centralGlow, TweenInfo.new(0.5), { Rate = 32 }):Play()
     end
     if ringParticles then ringParticles:Emit(8) end
     if yellowRingParticles then yellowRingParticles:Emit(6) end
 
-    -- Update existing bolts to phase 2 colors
     local cols2 = BOLT_COLORS[2]
     for _, b in ipairs(lightningBeams) do
         if b.beam then
@@ -516,6 +625,7 @@ end
 
 local function enterPhase3()
     chargePhase = 3
+    orbPhase = 3
     phase3StartTime = tick()
 
     if tracks.charge and tracks.charge.IsPlaying then tracks.charge:Stop(0.1) end
@@ -524,28 +634,11 @@ local function enterPhase3()
 
     persistentSunColor  = Color3.fromRGB(80, 200, 255)
     persistentLightColor = Color3.fromRGB(80, 200, 255)
+    updateSunOrbPhase(3)
 
-    if sunOrb then
-        tw(sunOrb, 0.6, { Color = persistentSunColor })
-        local light = sunOrb:FindFirstChildWhichIsA("PointLight")
-        if light then tw(light, 0.6, { Color = persistentLightColor, Brightness = 6 }) end
-        if sunFire then
-            sunFire.Color = ColorSequence.new{
-                ColorSequenceKeypoint.new(0,   Color3.fromRGB(100, 220, 255)),
-                ColorSequenceKeypoint.new(0.5, Color3.fromRGB( 60, 180, 255)),
-                ColorSequenceKeypoint.new(1,   Color3.fromRGB( 20, 140, 255)),
-            }
-        end
-        updateOrbParticleColors(
-            { ColorSequenceKeypoint.new(0, Color3.fromRGB(100,220,255)), ColorSequenceKeypoint.new(0.5, Color3.fromRGB(60,180,255)), ColorSequenceKeypoint.new(1, Color3.fromRGB(20,140,255)) },
-            { ColorSequenceKeypoint.new(0, Color3.fromRGB(200,245,255)), ColorSequenceKeypoint.new(1, Color3.fromRGB(60,180,255)) },
-            { ColorSequenceKeypoint.new(0, Color3.fromRGB(180,240,255)), ColorSequenceKeypoint.new(0.5, Color3.fromRGB(60,190,255)), ColorSequenceKeypoint.new(1, Color3.fromRGB(20,120,220)) }
-        )
-    end
     if chargeSoundA then tw(chargeSoundA, 0.4, { PlaybackSpeed = 0.7, Volume = 2.4 }) end
     if chargeSoundB then tw(chargeSoundB, 0.4, { PlaybackSpeed = 0.7, Volume = 2.4 }) end
 
-    -- Update existing bolts to phase 3 colors
     local cols3 = BOLT_COLORS[3]
     for _, b in ipairs(lightningBeams) do
         if b.beam then
@@ -581,10 +674,22 @@ local function enterPhase3()
     end)
 
     if chargeParticles then
+        chargeParticles.Color = ColorSequence.new{
+            ColorSequenceKeypoint.new(0,   Color3.fromRGB(180, 240, 255)),
+            ColorSequenceKeypoint.new(0.4, Color3.fromRGB( 60, 190, 255)),
+            ColorSequenceKeypoint.new(1,   Color3.fromRGB( 10, 110, 220)),
+        }
         chargeParticles:Emit(1200)
         TweenService:Create(chargeParticles, TweenInfo.new(0.6), { Rate = 85000 }):Play()
     end
+    if chargeParticles2 then chargeParticles2.Color = CHARGE_PARTICLES2_COLORS[3] end
+    if embers           then embers.Color           = EMBERS_COLORS[3]           end
     if centralGlow then
+        centralGlow.Color = ColorSequence.new{
+            ColorSequenceKeypoint.new(0,   Color3.fromRGB(200, 245, 255)),
+            ColorSequenceKeypoint.new(0.4, Color3.fromRGB( 80, 200, 255)),
+            ColorSequenceKeypoint.new(1,   Color3.fromRGB( 20, 120, 255)),
+        }
         centralGlow:Emit(65)
         TweenService:Create(centralGlow, TweenInfo.new(0.6), { Rate = 480 }):Play()
     end
@@ -597,6 +702,7 @@ end
 local phase4FlashThread
 local function enterPhase4()
     chargePhase = 4
+    orbPhase = 4
     phase4StartTime = tick()
 
     if not hasPhase4Unlocked then
@@ -610,24 +716,8 @@ local function enterPhase4()
 
     persistentSunColor  = Color3.fromRGB(200, 50, 255)
     persistentLightColor = Color3.fromRGB(220, 120, 255)
+    updateSunOrbPhase(4)
 
-    if sunOrb then
-        tw(sunOrb, 0.6, { Color = persistentSunColor })
-        local light = sunOrb:FindFirstChildWhichIsA("PointLight")
-        if light then tw(light, 0.6, { Color = persistentLightColor, Brightness = 8 }) end
-        if sunFire then
-            sunFire.Color = ColorSequence.new{
-                ColorSequenceKeypoint.new(0,   Color3.fromRGB(255, 120, 255)),
-                ColorSequenceKeypoint.new(0.5, Color3.fromRGB(200,  50, 255)),
-                ColorSequenceKeypoint.new(1,   Color3.fromRGB(140,   0, 255)),
-            }
-        end
-        updateOrbParticleColors(
-            { ColorSequenceKeypoint.new(0, Color3.fromRGB(255,120,255)), ColorSequenceKeypoint.new(0.5, Color3.fromRGB(200,50,255)), ColorSequenceKeypoint.new(1, Color3.fromRGB(140,0,255)) },
-            { ColorSequenceKeypoint.new(0, Color3.fromRGB(255,200,255)), ColorSequenceKeypoint.new(1, Color3.fromRGB(180,0,255)) },
-            { ColorSequenceKeypoint.new(0, Color3.fromRGB(240,140,255)), ColorSequenceKeypoint.new(0.5, Color3.fromRGB(190,40,255)), ColorSequenceKeypoint.new(1, Color3.fromRGB(120,0,200)) }
-        )
-    end
     if chargeSoundA then tw(chargeSoundA, 0.3, { Volume = 3.0, PlaybackSpeed = 0.5 }) end
     if chargeSoundB then tw(chargeSoundB, 0.3, { Volume = 3.0, PlaybackSpeed = 0.5 }) end
 
@@ -645,6 +735,8 @@ local function enterPhase4()
         TweenService:Create(chargeParticles, TweenInfo.new(0.4), { Rate = 220000 }):Play()
         chargeParticles:Emit(3500)
     end
+    if chargeParticles2 then chargeParticles2.Color = CHARGE_PARTICLES2_COLORS[4] end
+    if embers           then embers.Color           = EMBERS_COLORS[4]           end
     if centralGlow then
         centralGlow.Color = ColorSequence.new{
             ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 120, 255)),
@@ -656,7 +748,6 @@ local function enterPhase4()
     if ringParticles then ringParticles:Emit(120) end
     if yellowRingParticles then yellowRingParticles:Emit(90) end
 
-    -- Update existing bolts to phase 4 colors
     local cols4 = BOLT_COLORS[4]
     for _, b in ipairs(lightningBeams) do
         if b.beam then
@@ -704,6 +795,7 @@ end
 local phase5FlashThread, phase5FloatConn
 local function enterPhase5()
     chargePhase = 5
+    orbPhase = 5
     hasPhase5Unlocked = true
 
     if currentMaxDashes < CFG.maxDashesPhase5 then
@@ -719,25 +811,7 @@ local function enterPhase5()
 
     persistentSunColor  = Color3.fromRGB(255, 255, 240)
     persistentLightColor = Color3.fromRGB(255, 255, 240)
-
-    if sunOrb then
-        tw(sunOrb, 1.0, { Color = persistentSunColor })
-        local light = sunOrb:FindFirstChildWhichIsA("PointLight")
-        if light then tw(light, 1.0, { Color = persistentLightColor, Brightness = 12 }) end
-        if sunFire then
-            sunFire.Color = ColorSequence.new{
-                ColorSequenceKeypoint.new(0,   Color3.fromRGB(255, 255, 255)),
-                ColorSequenceKeypoint.new(0.5, Color3.fromRGB(220, 240, 255)),
-                ColorSequenceKeypoint.new(1,   Color3.fromRGB(180, 200, 255)),
-            }
-            TweenService:Create(sunFire, TweenInfo.new(1.0), { Rate = 400 }):Play()
-        end
-        updateOrbParticleColors(
-            { ColorSequenceKeypoint.new(0, Color3.fromRGB(255,255,255)), ColorSequenceKeypoint.new(0.5, Color3.fromRGB(220,240,255)), ColorSequenceKeypoint.new(1, Color3.fromRGB(180,200,255)) },
-            { ColorSequenceKeypoint.new(0, Color3.fromRGB(255,255,255)), ColorSequenceKeypoint.new(1, Color3.fromRGB(200,230,255)) },
-            { ColorSequenceKeypoint.new(0, Color3.fromRGB(255,255,255)), ColorSequenceKeypoint.new(0.5, Color3.fromRGB(210,235,255)), ColorSequenceKeypoint.new(1, Color3.fromRGB(170,210,255)) }
-        )
-    end
+    updateSunOrbPhase(5)
 
     screenFlash(255, 255, 255, 0.0,  0.08)
     task.delay(0.12, function() screenFlash(255, 255, 255, 0.0,  0.10) end)
@@ -756,6 +830,8 @@ local function enterPhase5()
         TweenService:Create(chargeParticles, TweenInfo.new(0.8), { Rate = 320000 }):Play()
         chargeParticles:Emit(5000)
     end
+    if chargeParticles2 then chargeParticles2.Color = CHARGE_PARTICLES2_COLORS[5] end
+    if embers           then embers.Color           = EMBERS_COLORS[5]           end
     if centralGlow then
         centralGlow.Color = ColorSequence.new{
             ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 255, 255)),
@@ -770,7 +846,6 @@ local function enterPhase5()
         yellowRingParticles:Emit(160)
     end
 
-    -- Update existing bolts to phase 5 colors
     local cols5 = BOLT_COLORS[5]
     for _, b in ipairs(lightningBeams) do
         if b.beam then
@@ -872,6 +947,9 @@ local function enterPhase5()
 end
 
 local function resetEnhancements()
+    -- Snapshot the phase reached so the sun orb keeps those colors after charge ends
+    local lastPhase = chargePhase
+
     fullPower = false
     chargePhase = 1
     fullPowerStartTime = 0
@@ -882,51 +960,17 @@ local function resetEnhancements()
     if phase5FlashThread then task.cancel(phase5FlashThread); phase5FlashThread = nil end
     if phase5FloatConn   then phase5FloatConn:Disconnect();  phase5FloatConn   = nil end
 
+    -- Keep the sun orb fire/corona/light at the last phase's colors so it
+    -- doesn't snap back to plain yellow the moment charge is released.
+    -- persistentSunColor and persistentLightColor were already set by the
+    -- last enterPhaseX call, so we just re-apply them without overwriting.
+    if sunFire   and SUN_ORB_FIRE_COLORS[lastPhase]   then sunFire.Color   = SUN_ORB_FIRE_COLORS[lastPhase]   end
+    if sunCorona and SUN_ORB_CORONA_COLORS[lastPhase]  then sunCorona.Color = SUN_ORB_CORONA_COLORS[lastPhase]  end
     if sunOrb then
         tw(sunOrb, 0.6, { Color = persistentSunColor })
         local light = sunOrb:FindFirstChildWhichIsA("PointLight")
-        if light then tw(light, 0.6, { Color = persistentLightColor, Brightness = (persistentSunColor == Color3.fromRGB(255,255,240) and 12 or 6) }) end
-        if sunFire then
-            if persistentSunColor == Color3.fromRGB(255,255,240) then
-                sunFire.Color = ColorSequence.new{
-                    ColorSequenceKeypoint.new(0,   Color3.fromRGB(255, 255, 255)),
-                    ColorSequenceKeypoint.new(0.5, Color3.fromRGB(220, 240, 255)),
-                    ColorSequenceKeypoint.new(1,   Color3.fromRGB(180, 200, 255)),
-                }
-                updateOrbParticleColors(
-                    { ColorSequenceKeypoint.new(0, Color3.fromRGB(255,255,255)), ColorSequenceKeypoint.new(0.5, Color3.fromRGB(220,240,255)), ColorSequenceKeypoint.new(1, Color3.fromRGB(180,200,255)) },
-                    { ColorSequenceKeypoint.new(0, Color3.fromRGB(255,255,255)), ColorSequenceKeypoint.new(1, Color3.fromRGB(200,230,255)) },
-                    { ColorSequenceKeypoint.new(0, Color3.fromRGB(255,255,255)), ColorSequenceKeypoint.new(0.5, Color3.fromRGB(210,235,255)), ColorSequenceKeypoint.new(1, Color3.fromRGB(170,210,255)) }
-                )
-            elseif persistentSunColor == Color3.fromRGB(80,200,255) then
-                sunFire.Color = ColorSequence.new{
-                    ColorSequenceKeypoint.new(0,   Color3.fromRGB(100, 220, 255)),
-                    ColorSequenceKeypoint.new(0.5, Color3.fromRGB( 60, 180, 255)),
-                    ColorSequenceKeypoint.new(1,   Color3.fromRGB( 20, 140, 255)),
-                }
-                updateOrbParticleColors(
-                    { ColorSequenceKeypoint.new(0, Color3.fromRGB(100,220,255)), ColorSequenceKeypoint.new(0.5, Color3.fromRGB(60,180,255)), ColorSequenceKeypoint.new(1, Color3.fromRGB(20,140,255)) },
-                    { ColorSequenceKeypoint.new(0, Color3.fromRGB(200,245,255)), ColorSequenceKeypoint.new(1, Color3.fromRGB(60,180,255)) },
-                    { ColorSequenceKeypoint.new(0, Color3.fromRGB(180,240,255)), ColorSequenceKeypoint.new(0.5, Color3.fromRGB(60,190,255)), ColorSequenceKeypoint.new(1, Color3.fromRGB(20,120,220)) }
-                )
-            elseif persistentSunColor == Color3.fromRGB(200,50,255) then
-                sunFire.Color = ColorSequence.new{
-                    ColorSequenceKeypoint.new(0,   Color3.fromRGB(255, 120, 255)),
-                    ColorSequenceKeypoint.new(0.5, Color3.fromRGB(200,  50, 255)),
-                    ColorSequenceKeypoint.new(1,   Color3.fromRGB(140,   0, 255)),
-                }
-                updateOrbParticleColors(
-                    { ColorSequenceKeypoint.new(0, Color3.fromRGB(255,120,255)), ColorSequenceKeypoint.new(0.5, Color3.fromRGB(200,50,255)), ColorSequenceKeypoint.new(1, Color3.fromRGB(140,0,255)) },
-                    { ColorSequenceKeypoint.new(0, Color3.fromRGB(255,200,255)), ColorSequenceKeypoint.new(1, Color3.fromRGB(180,0,255)) },
-                    { ColorSequenceKeypoint.new(0, Color3.fromRGB(240,140,255)), ColorSequenceKeypoint.new(0.5, Color3.fromRGB(190,40,255)), ColorSequenceKeypoint.new(1, Color3.fromRGB(120,0,200)) }
-                )
-            else
-                updateOrbParticleColors(
-                    { ColorSequenceKeypoint.new(0, Color3.fromRGB(255,255,120)), ColorSequenceKeypoint.new(0.5, Color3.fromRGB(255,180,30)), ColorSequenceKeypoint.new(1, Color3.fromRGB(200,60,0)) },
-                    { ColorSequenceKeypoint.new(0, Color3.fromRGB(255,255,200)), ColorSequenceKeypoint.new(1, Color3.fromRGB(255,200,50)) },
-                    { ColorSequenceKeypoint.new(0, Color3.fromRGB(255,220,80)), ColorSequenceKeypoint.new(0.5, Color3.fromRGB(255,120,0)), ColorSequenceKeypoint.new(1, Color3.fromRGB(200,40,0)) }
-                )
-            end
+        if light then
+            tw(light, 0.6, { Color = persistentLightColor })
         end
     end
 
@@ -937,10 +981,6 @@ local function resetEnhancements()
 
     if chargeSoundA then chargeSoundA.Volume = 1; chargeSoundA.PlaybackSpeed = 1 end
     if chargeSoundB then chargeSoundB.Volume = 1; chargeSoundB.PlaybackSpeed = 1 end
-
-    if chargeParticles then
-        chargeParticles.Color = ColorSequence.new(Color3.fromRGB(255, 255, 0))
-    end
 
     for _, b in ipairs(lightningBeams) do
         if b.beam then b.beam:Destroy() end
@@ -1042,7 +1082,7 @@ local chargeBar, chargeFill, chargeStroke, chargeGrad = makeBar(0.855, "⚡ Char
 local dashBar,   dashFill,   dashStroke,   dashGrad   = makeBar(0.805, "💨 Dashes")
 
 local function updateBarPhaseColor(stroke, grad, phase)
-    local cols     = PHASE_BAR_COLORS[phase]   or PHASE_BAR_COLORS[1]
+    local cols      = PHASE_BAR_COLORS[phase]   or PHASE_BAR_COLORS[1]
     local strokeCol = PHASE_STROKE_COLORS[phase] or PHASE_STROKE_COLORS[1]
     tw(stroke, 0.5, { Color = strokeCol })
     grad.Color = ColorSequence.new{
@@ -1075,8 +1115,8 @@ controlsGui.Enabled      = false
 controlsGui.Parent       = lp:WaitForChild("PlayerGui")
 
 local ctrlFrame = Instance.new("Frame", controlsGui)
-ctrlFrame.Size             = UDim2.new(0, 290, 0, 410)
-ctrlFrame.Position         = UDim2.new(0.5, -145, 0.5, -205)
+ctrlFrame.Size             = UDim2.new(0, 290, 0, 470)
+ctrlFrame.Position         = UDim2.new(0.5, -145, 0.5, -235)
 ctrlFrame.BackgroundColor3 = Color3.fromRGB(8, 8, 12)
 ctrlFrame.BackgroundTransparency = 0.08
 ctrlFrame.BorderSizePixel  = 0
@@ -1171,7 +1211,8 @@ local function makeToggle(labelText, yPos, key)
         refresh()
         if key == "sunOrb" and sunOrb then
             sunOrb.Transparency = toggles.sunOrb and 0.2 or 1
-            if sunFire then sunFire.Enabled = toggles.sunOrb end
+            if sunFire   then sunFire.Enabled   = toggles.sunOrb end
+            if sunCorona then sunCorona.Enabled = toggles.sunOrb end
         elseif key == "music" and musicSound then
             if toggles.music then musicSound:Play() else musicSound:Stop() end
         end
@@ -1184,16 +1225,60 @@ makeToggle("📷  Camera Shake",     182, "camShake")
 makeToggle("⚡  Char. Shake",      234, "charShake")
 makeToggle("🎵  Music",            286, "music")
 
+local grieferDivider = Instance.new("Frame", ctrlFrame)
+grieferDivider.Size             = UDim2.new(0.85, 0, 0, 1)
+grieferDivider.Position         = UDim2.new(0.075, 0, 0, 344)
+grieferDivider.BackgroundColor3 = Color3.fromRGB(180, 0, 255)
+grieferDivider.BackgroundTransparency = 0.5
+grieferDivider.BorderSizePixel  = 0
+
+local grieferToggleRow = Instance.new("Frame", ctrlFrame)
+grieferToggleRow.Size             = UDim2.new(1, -24, 0, 46)
+grieferToggleRow.Position         = UDim2.new(0, 12, 0, 352)
+grieferToggleRow.BackgroundColor3 = Color3.fromRGB(120, 0, 200)
+grieferToggleRow.BackgroundTransparency = 0.80
+grieferToggleRow.BorderSizePixel  = 0
+Instance.new("UICorner", grieferToggleRow).CornerRadius = UDim.new(0, 10)
+local grieferStroke2 = Instance.new("UIStroke", grieferToggleRow)
+grieferStroke2.Color     = Color3.fromRGB(200, 80, 255)
+grieferStroke2.Thickness = 1.2
+grieferStroke2.Transparency = 0.4
+
+local grieferLbl = Instance.new("TextLabel", grieferToggleRow)
+grieferLbl.Size             = UDim2.new(0.62, 0, 1, 0)
+grieferLbl.Position         = UDim2.new(0, 12, 0, 0)
+grieferLbl.BackgroundTransparency = 1
+grieferLbl.Text             = "😈  Griefer Mode"
+grieferLbl.TextColor3       = Color3.fromRGB(220, 160, 255)
+grieferLbl.Font             = Enum.Font.GothamSemibold
+grieferLbl.TextSize         = 14
+grieferLbl.TextXAlignment   = Enum.TextXAlignment.Left
+
+local grieferBtn = Instance.new("TextButton", grieferToggleRow)
+grieferBtn.Size             = UDim2.new(0, 72, 0, 30)
+grieferBtn.Position         = UDim2.new(1, -84, 0.5, -15)
+grieferBtn.Font             = Enum.Font.GothamBlack
+grieferBtn.TextSize         = 13
+grieferBtn.TextColor3       = Color3.new(1, 1, 1)
+grieferBtn.BorderSizePixel  = 0
+grieferBtn.BackgroundColor3 = Color3.fromRGB(200, 35, 35)
+Instance.new("UICorner", grieferBtn).CornerRadius = UDim.new(1, 0)
+local grieferBtnStroke = Instance.new("UIStroke", grieferBtn)
+grieferBtnStroke.Thickness   = 1.5
+grieferBtnStroke.Transparency = 0.5
+grieferBtnStroke.Color       = Color3.fromRGB(255, 60, 60)
+grieferBtn.Text = "OFF"
+
 local divider2 = Instance.new("Frame", ctrlFrame)
 divider2.Size             = UDim2.new(0.85, 0, 0, 1)
-divider2.Position         = UDim2.new(0.075, 0, 0, 344)
+divider2.Position         = UDim2.new(0.075, 0, 0, 410)
 divider2.BackgroundColor3 = Color3.fromRGB(255, 200, 0)
 divider2.BackgroundTransparency = 0.7
 divider2.BorderSizePixel  = 0
 
 local keybindInfo = Instance.new("TextLabel", ctrlFrame)
 keybindInfo.Size             = UDim2.new(1, -24, 0, 58)
-keybindInfo.Position         = UDim2.new(0, 12, 0, 350)
+keybindInfo.Position         = UDim2.new(0, 12, 0, 416)
 keybindInfo.BackgroundTransparency = 1
 keybindInfo.TextColor3       = Color3.fromRGB(140, 130, 100)
 keybindInfo.Font             = Enum.Font.Gotham
@@ -1209,9 +1294,611 @@ UserInputService.InputBegan:Connect(function(input, gp)
     end
 end)
 
---// SUN ORB
+--// ═══════════════════════════════════════════════════════════════
+--// GRIEFER MODE
+--// ═══════════════════════════════════════════════════════════════
+local GRIEFER_ANIM_IDS = {
+    idle   = {72526127498800, 95203125292023, 76780522821306, 118742751559908},
+    walk   = {138379855143069, 131520975704727, 86916179388467, 90175656540190, 119545916455209},
+    jump   = {507765000},
+    attack = {83509299779732},
+    block  = {95257441033806},
+    sprint = {121350640829746},
+}
+local GRIEFER_CFG = {
+    NORMAL_SPEED    = 13,
+    SPRINT_SPEED    = 26,
+    ATTACK_MOVE_SPD = 0,
+    BLOCK_MOVE_SPD  = 5,
+    SPRINT_MAX      = 2,
+    SPRINT_DRAIN    = 1,
+    SPRINT_REGEN_IDLE  = 0.9,
+    SPRINT_REGEN_MOVE  = 0.45,
+    SPRINT_RESUME_PCT  = 0.30,
+    ATTACK_COOLDOWN  = 0.55,
+    ATTACK_SPEED_MOD = 2.5,
+    ATTACK_TIMEOUT   = 3.5,
+    ATTACK_SOUND_ID  = "rbxassetid://95902765954083",
+    SPRINT_ANIM_SPD  = 1.75,
+    DASH_FORCE       = 145,
+    DASH_TIME        = 0.25,
+    DASH_COOLDOWN    = 1.8,
+}
+
+-- Griefer flame colors (dark purple/red theme)
+local GRIEFER_FLAME_COLS = {
+    Color3.fromRGB(180,  20, 255),
+    Color3.fromRGB(255,  30,  80),
+    Color3.fromRGB( 80,   0, 180),
+}
+
+-- Griefer state
+local gState = {
+    active     = false,
+    attacking  = false,
+    blocking   = false,
+    sprinting  = false,
+    stamina    = GRIEFER_CFG.SPRINT_MAX,
+    sprintCD   = false,
+    shiftHeld  = false,
+    dashCD     = false,
+    variantIdx = {},
+}
+for g in pairs(GRIEFER_ANIM_IDS) do gState.variantIdx[g] = 1 end
+
+local gTracks       = {}
+local gActiveTrack  = nil
+local gLastAttack   = 0
+local gConnections  = {}
+
+-- Stamina GUI (shared, recolored for griefer)
+-- (uses the existing screenGui from the sun god side — we just recolor it)
+
+local function grieferLoadAnims(char)
+    local humanoid = char:FindFirstChildWhichIsA("Humanoid")
+    if not humanoid then return end
+    local animator = humanoid:FindFirstChildWhichIsA("Animator")
+    if not animator then return end
+    gTracks = {}
+    for group, ids in pairs(GRIEFER_ANIM_IDS) do
+        gTracks[group] = {}
+        for _, id in ipairs(ids) do
+            local anim = Instance.new("Animation")
+            anim.AnimationId = "rbxassetid://" .. id
+            local t = animator:LoadAnimation(anim)
+            local pri = (group == "idle")   and Enum.AnimationPriority.Idle
+                     or (group == "walk" or group == "jump" or group == "sprint") and Enum.AnimationPriority.Movement
+                     or Enum.AnimationPriority.Action4
+            t.Priority = pri
+            table.insert(gTracks[group], t)
+        end
+    end
+end
+
+local function gStopAll(fade)
+    fade = fade or 0
+    for _, pool in pairs(gTracks) do
+        for _, t in ipairs(pool) do
+            if t.IsPlaying then t:Stop(fade) end
+        end
+    end
+end
+
+local function gPlayGroup(group, looped, fade)
+    local pool = gTracks[group]
+    if not pool or #pool == 0 then return end
+    local idx   = gState.variantIdx[group]
+    local track = pool[idx]
+    gState.variantIdx[group] = (idx % #pool) + 1
+    if gActiveTrack and gActiveTrack ~= track and gActiveTrack.IsPlaying then
+        gActiveTrack:Stop(fade or 0.2)
+    end
+    track.Looped = looped
+    if not track.IsPlaying then track:Play(fade or 0.15) end
+    gActiveTrack = track
+end
+
+local function gSyncSpeed(char)
+    local humanoid = char and char:FindFirstChildWhichIsA("Humanoid")
+    if not humanoid then return end
+    if gState.attacking then
+        humanoid.WalkSpeed = GRIEFER_CFG.ATTACK_MOVE_SPD
+    elseif gState.blocking then
+        humanoid.WalkSpeed = GRIEFER_CFG.BLOCK_MOVE_SPD
+    elseif gState.sprinting then
+        humanoid.WalkSpeed = GRIEFER_CFG.SPRINT_SPEED
+    else
+        humanoid.WalkSpeed = GRIEFER_CFG.NORMAL_SPEED
+    end
+end
+
+local function gRefreshMovement(char)
+    if gState.attacking or gState.blocking then return end
+    local hrpG = char and char:FindFirstChild("HumanoidRootPart")
+    if not hrpG then return end
+    local humanoid = char:FindFirstChildWhichIsA("Humanoid")
+    local vel    = hrpG.AssemblyLinearVelocity
+    local flat   = Vector2.new(vel.X, vel.Z).Magnitude
+    local moving = flat > 1.0
+    local falling = humanoid and humanoid:GetState() == Enum.HumanoidStateType.Freefall
+    if falling then
+        gPlayGroup("jump", false)
+    elseif gState.sprinting and moving then
+        gPlayGroup("sprint", true)
+        if gTracks.sprint and gTracks.sprint[1] then
+            gTracks.sprint[1]:AdjustSpeed(GRIEFER_CFG.SPRINT_ANIM_SPD)
+        end
+    elseif moving then
+        gPlayGroup("walk", true)
+    else
+        gPlayGroup("idle", true)
+    end
+end
+
+-- Griefer dash flame burst (dark purple/red, appears on both hands)
+local function grieferDashFlames(char)
+    local handNames = {"RightHand","LeftHand","Right Arm","Left Arm"}
+    local hands = {}
+    for _, n in ipairs(handNames) do
+        local h = char and char:FindFirstChild(n)
+        if h then hands[#hands+1] = h end
+        if #hands >= 2 then break end
+    end
+    if #hands == 0 then
+        local hrpG = char and char:FindFirstChild("HumanoidRootPart")
+        if hrpG then hands = {hrpG} end
+    end
+
+    for _, handPart in ipairs(hands) do
+        local ghost = Instance.new("Part")
+        ghost.Anchored    = true
+        ghost.CanCollide  = false
+        ghost.Transparency = 1
+        ghost.Size        = Vector3.new(0.1, 0.1, 0.1)
+        ghost.CFrame      = handPart.CFrame
+        ghost.Parent      = workspace
+        Debris:AddItem(ghost, 1.5)
+
+        local att = Instance.new("Attachment", ghost)
+
+        local ball = Instance.new("ParticleEmitter", att)
+        ball.Texture       = "rbxasset://textures/particles/fire_main.dds"
+        ball.Color         = ColorSequence.new{
+            ColorSequenceKeypoint.new(0,   GRIEFER_FLAME_COLS[1]),
+            ColorSequenceKeypoint.new(0.5, GRIEFER_FLAME_COLS[2]),
+            ColorSequenceKeypoint.new(1,   GRIEFER_FLAME_COLS[3]),
+        }
+        ball.Size = NumberSequence.new{
+            NumberSequenceKeypoint.new(0,   1.4),
+            NumberSequenceKeypoint.new(0.2, 3.2),
+            NumberSequenceKeypoint.new(0.6, 2.0),
+            NumberSequenceKeypoint.new(1,   0),
+        }
+        ball.Lifetime      = NumberRange.new(0.35, 0.75)
+        ball.Rate          = 0
+        ball.Speed         = NumberRange.new(12, 32)
+        ball.SpreadAngle   = Vector2.new(360, 360)
+        ball.RotSpeed      = NumberRange.new(-300, 300)
+        ball.LightEmission = 1
+        ball.Transparency  = NumberSequence.new{
+            NumberSequenceKeypoint.new(0, 0.0),
+            NumberSequenceKeypoint.new(0.3, 0.05),
+            NumberSequenceKeypoint.new(1, 1.0),
+        }
+        ball:Emit(55)
+
+        local streaks = Instance.new("ParticleEmitter", att)
+        streaks.Texture       = "rbxassetid://6101261905"
+        streaks.Color         = ColorSequence.new{
+            ColorSequenceKeypoint.new(0, GRIEFER_FLAME_COLS[1]),
+            ColorSequenceKeypoint.new(1, Color3.fromRGB(255, 255, 255)),
+        }
+        streaks.Size = NumberSequence.new{
+            NumberSequenceKeypoint.new(0,   0.15),
+            NumberSequenceKeypoint.new(0.5, 0.35),
+            NumberSequenceKeypoint.new(1,   0),
+        }
+        streaks.Lifetime      = NumberRange.new(0.10, 0.28)
+        streaks.Rate          = 0
+        streaks.Speed         = NumberRange.new(28, 70)
+        streaks.SpreadAngle   = Vector2.new(30, 30)
+        streaks.LightEmission = 1
+        streaks.Transparency  = NumberSequence.new{
+            NumberSequenceKeypoint.new(0, 0), NumberSequenceKeypoint.new(1, 1)
+        }
+        streaks:Emit(28)
+    end
+
+    -- Shockwave ring
+    local hrpG = char and char:FindFirstChild("HumanoidRootPart")
+    if hrpG then
+        local rAtt = Instance.new("Attachment", hrpG)
+        local ring = Instance.new("ParticleEmitter", rAtt)
+        ring.Texture      = "rbxasset://textures/whiteCircle.png"
+        ring.Color        = ColorSequence.new(GRIEFER_FLAME_COLS[1])
+        ring.Size = NumberSequence.new{
+            NumberSequenceKeypoint.new(0, 0),
+            NumberSequenceKeypoint.new(0.3, 10),
+            NumberSequenceKeypoint.new(1,  14),
+        }
+        ring.Lifetime     = NumberRange.new(0.22, 0.32)
+        ring.Rate         = 0
+        ring.Speed        = NumberRange.new(0)
+        ring.LightEmission = 1
+        ring.Transparency = NumberSequence.new{
+            NumberSequenceKeypoint.new(0, 1),
+            NumberSequenceKeypoint.new(0.2, 0.15),
+            NumberSequenceKeypoint.new(0.7, 0.55),
+            NumberSequenceKeypoint.new(1, 1),
+        }
+        ring.Orientation  = Enum.ParticleOrientation.FacingCamera
+        ring:Emit(1)
+        Debris:AddItem(rAtt, 0.5)
+    end
+end
+
+-- Griefer stamina bar (recolors the existing bar to purple/red)
+local function grieferColorBar(on)
+    -- recolor the existing sun god dash/charge bars to match griefer theme
+    local col = on and Color3.fromRGB(180, 20, 255) or Color3.fromRGB(255, 200, 0)
+    if chargeStroke then tw(chargeStroke, 0.4, { Color = col }) end
+    if dashStroke   then tw(dashStroke,   0.4, { Color = col }) end
+    if ctrlStroke   then tw(ctrlStroke,   0.4, { Color = col }) end
+    ctrlTitle.Text       = on and "😈  GRIEFER"    or "☀  SUN GOD"
+    ctrlTitle.TextColor3 = on and Color3.fromRGB(200, 80, 255) or Color3.fromRGB(255, 225, 80)
+    ctrlTitle.TextStrokeColor3 = on and Color3.fromRGB(100, 0, 180) or Color3.fromRGB(200, 100, 0)
+end
+
+-- Griefer stamina HUD (separate simple bar so sun god bars stay hidden)
+local grieferGui = Instance.new("ScreenGui")
+grieferGui.Name         = "GrieferHUD"
+grieferGui.ResetOnSpawn = false
+grieferGui.Enabled      = false
+grieferGui.Parent       = lp:WaitForChild("PlayerGui")
+
+local gRoot = Instance.new("Frame", grieferGui)
+gRoot.AnchorPoint           = Vector2.new(0.5, 1)
+gRoot.Position              = UDim2.new(0.5, 0, 1, -52)
+gRoot.Size                  = UDim2.new(0, 260, 0, 42)
+gRoot.BackgroundTransparency = 1
+
+local gLabel = Instance.new("TextLabel", gRoot)
+gLabel.Size                 = UDim2.new(1, 0, 0, 13)
+gLabel.BackgroundTransparency = 1
+gLabel.Text                 = "STAMINA"
+gLabel.TextColor3           = Color3.fromRGB(200, 140, 255)
+gLabel.TextSize             = 10
+gLabel.Font                 = Enum.Font.GothamBold
+gLabel.TextXAlignment       = Enum.TextXAlignment.Left
+
+local gBg = Instance.new("Frame", gRoot)
+gBg.Size             = UDim2.new(1, 0, 0, 16)
+gBg.Position         = UDim2.new(0, 0, 0, 15)
+gBg.BackgroundColor3 = Color3.fromRGB(8, 8, 8)
+gBg.BorderSizePixel  = 0
+Instance.new("UICorner", gBg).CornerRadius = UDim.new(1, 0)
+local gBgStroke = Instance.new("UIStroke", gBg)
+gBgStroke.Color     = Color3.fromRGB(80, 0, 120)
+gBgStroke.Thickness = 1.2
+
+local gFill = Instance.new("Frame", gBg)
+gFill.Size             = UDim2.new(1, 0, 1, 0)
+gFill.BackgroundColor3 = Color3.fromRGB(160, 20, 255)
+gFill.BorderSizePixel  = 0
+Instance.new("UICorner", gFill).CornerRadius = UDim.new(1, 0)
+local gShine = Instance.new("Frame", gFill)
+gShine.Size                   = UDim2.new(1, 0, 0.4, 0)
+gShine.BackgroundColor3       = Color3.fromRGB(255,255,255)
+gShine.BackgroundTransparency = 0.78
+gShine.BorderSizePixel        = 0
+Instance.new("UICorner", gShine).CornerRadius = UDim.new(1, 0)
+
+local gBarTween = nil
+local function updateGrieferStaminaBar(pct)
+    pct = math.clamp(pct, 0, 1)
+    local col = Color3.fromRGB(
+        math.floor(160 + (1-pct)*95),
+        math.floor(20  * pct),
+        math.floor(255 * pct)
+    )
+    if gBarTween then gBarTween:Cancel() end
+    gBarTween = TweenService:Create(gFill,
+        TweenInfo.new(0.08, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
+        { Size = UDim2.new(pct, 0, 1, 0), BackgroundColor3 = col }
+    )
+    gBarTween:Play()
+end
+
+-- Griefer main heartbeat connection
+local grieferHeartbeat = nil
+
+local function startGrieferMode(char)
+    if not char then return end
+    grieferLoadAnims(char)
+    gState.stamina   = GRIEFER_CFG.SPRINT_MAX
+    gState.sprintCD  = false
+    gState.attacking = false
+    gState.blocking  = false
+    gState.sprinting = false
+    gState.dashCD    = false
+
+    local humanoid = char:FindFirstChildWhichIsA("Humanoid")
+    local hrpG     = char:FindFirstChild("HumanoidRootPart")
+    if not humanoid or not hrpG then return end
+
+    humanoid.WalkSpeed = GRIEFER_CFG.NORMAL_SPEED
+    gPlayGroup("idle", true)
+
+    -- Movement connection
+    gConnections.run = humanoid.Running:Connect(function(speed)
+        if gState.attacking or gState.blocking then return end
+        if speed > 0.5 then
+            gPlayGroup("walk", true)
+        else
+            gPlayGroup("idle", true)
+        end
+    end)
+    gConnections.jump = humanoid.StateChanged:Connect(function(_, new)
+        if new == Enum.HumanoidStateType.Jumping and not gState.attacking then
+            gPlayGroup("jump", false)
+        end
+    end)
+
+    grieferHeartbeat = RunService.Heartbeat:Connect(function(dt)
+        if not gState.active then return end
+        local char2 = lp.Character
+        if not char2 then return end
+        local hrp2 = char2:FindFirstChild("HumanoidRootPart")
+        if not hrp2 then return end
+        local hum2 = char2:FindFirstChildWhichIsA("Humanoid")
+
+        local vel    = hrp2.AssemblyLinearVelocity
+        local moving = Vector2.new(vel.X, vel.Z).Magnitude > 1.0
+
+        -- Stamina
+        if gState.sprinting and moving then
+            gState.stamina = math.max(0, gState.stamina - GRIEFER_CFG.SPRINT_DRAIN * dt)
+            if gState.stamina <= 0 then
+                gState.sprintCD  = true
+                gState.sprinting = false
+            end
+        else
+            local rr = moving and GRIEFER_CFG.SPRINT_REGEN_MOVE or GRIEFER_CFG.SPRINT_REGEN_IDLE
+            gState.stamina = math.min(GRIEFER_CFG.SPRINT_MAX, gState.stamina + rr * dt)
+            if gState.sprintCD and gState.stamina >= GRIEFER_CFG.SPRINT_MAX * GRIEFER_CFG.SPRINT_RESUME_PCT then
+                gState.sprintCD = false
+            end
+        end
+
+        -- Sprint flag
+        gState.sprinting = gState.shiftHeld and moving
+            and not gState.attacking and not gState.blocking
+            and not gState.sprintCD and gState.stamina > 0
+
+        gSyncSpeed(char2)
+        updateGrieferStaminaBar(gState.stamina / GRIEFER_CFG.SPRINT_MAX)
+
+        if not gState.attacking and not gState.blocking then
+            gRefreshMovement(char2)
+        end
+    end)
+end
+
+local function stopGrieferMode(char)
+    if grieferHeartbeat then grieferHeartbeat:Disconnect(); grieferHeartbeat = nil end
+    for k, c in pairs(gConnections) do
+        if c and c.Disconnect then c:Disconnect() end
+        gConnections[k] = nil
+    end
+    gStopAll(0.2)
+    gActiveTrack = nil
+    -- Restore walkspeed to sun god default
+    local humanoid = char and char:FindFirstChildWhichIsA("Humanoid")
+    if humanoid then humanoid.WalkSpeed = 16 end
+end
+
+-- Griefer attack
+local function gDoAttack(char)
+    if not gState.active then return end
+    if gState.attacking or gState.blocking then return end
+    local now = tick()
+    if (now - gLastAttack) < GRIEFER_CFG.ATTACK_COOLDOWN then return end
+
+    gLastAttack     = now
+    gState.attacking = true
+
+    local hrpG = char and char:FindFirstChild("HumanoidRootPart")
+    local humanoid = char and char:FindFirstChildWhichIsA("Humanoid")
+    if not hrpG or not humanoid then gState.attacking = false; return end
+
+    gSyncSpeed(char)
+    humanoid.AutoRotate = false
+
+    local atkTrack = gTracks.attack and gTracks.attack[1]
+    if not atkTrack then gState.attacking = false; return end
+
+    gStopAll(0)
+    atkTrack.Looped = false
+    atkTrack:Play(0.08)
+    atkTrack:AdjustSpeed(GRIEFER_CFG.ATTACK_SPEED_MOD)
+    gActiveTrack = atkTrack
+
+    local snd = Instance.new("Sound")
+    snd.SoundId = GRIEFER_CFG.ATTACK_SOUND_ID
+    snd.Volume  = 0.9
+    snd.RollOffMaxDistance = 40
+    snd.Parent  = hrpG
+    snd:Play()
+    Debris:AddItem(snd, 3)
+
+    local done = false
+    local t0   = tick()
+    local conn
+    conn = atkTrack.Stopped:Connect(function() done = true; conn:Disconnect() end)
+    while not done and (tick() - t0) < GRIEFER_CFG.ATTACK_TIMEOUT do task.wait() end
+    if not done then conn:Disconnect(); atkTrack:Stop(0) end
+
+    humanoid.AutoRotate = true
+    gState.attacking    = false
+    gSyncSpeed(char)
+    gRefreshMovement(char)
+end
+
+-- Griefer dash
+local function gDoDash(char)
+    if not gState.active then return end
+    if gState.dashCD then return end
+    local hrpG = char and char:FindFirstChild("HumanoidRootPart")
+    if not hrpG then return end
+
+    gState.dashCD = true
+
+    local bv = Instance.new("BodyVelocity")
+    bv.MaxForce = Vector3.new(1e5, 1e5, 1e5)
+    bv.Velocity = hrpG.CFrame.LookVector * GRIEFER_CFG.DASH_FORCE
+        + Vector3.new(0, hrpG.AssemblyLinearVelocity.Y, 0)
+    bv.Parent   = hrpG
+    Debris:AddItem(bv, GRIEFER_CFG.DASH_TIME)
+
+    -- Trail
+    local ta = Instance.new("Attachment", hrpG); ta.Position = Vector3.new(0, 5, 0)
+    local tb = Instance.new("Attachment", hrpG); tb.Position = Vector3.new(0,-5, 0)
+    local trail = Instance.new("Trail")
+    trail.Attachment0 = ta; trail.Attachment1 = tb
+    trail.Lifetime    = 0.18
+    trail.Color       = ColorSequence.new{
+        ColorSequenceKeypoint.new(0,   Color3.fromRGB(200,  80, 255)),
+        ColorSequenceKeypoint.new(0.5, Color3.fromRGB(255,  30,  80)),
+        ColorSequenceKeypoint.new(1,   Color3.fromRGB( 80,   0, 180)),
+    }
+    trail.LightEmission = 1
+    trail.WidthScale  = NumberSequence.new{
+        NumberSequenceKeypoint.new(0, 9), NumberSequenceKeypoint.new(0.5, 5), NumberSequenceKeypoint.new(1, 0)
+    }
+    trail.Transparency = NumberSequence.new{
+        NumberSequenceKeypoint.new(0, 0), NumberSequenceKeypoint.new(0.4, 0.2), NumberSequenceKeypoint.new(1, 1)
+    }
+    trail.Parent = hrpG
+    Debris:AddItem(trail, 0.5); Debris:AddItem(ta, 0.5); Debris:AddItem(tb, 0.5)
+
+    -- Flame burst on hands
+    grieferDashFlames(char)
+
+    task.delay(GRIEFER_CFG.DASH_COOLDOWN, function() gState.dashCD = false end)
+end
+
+-- Griefer block
+local function gStartBlock(char)
+    if not gState.active then return end
+    if gState.attacking or gState.blocking then return end
+    gState.blocking = true
+    local humanoid = char and char:FindFirstChildWhichIsA("Humanoid")
+    if humanoid then humanoid.WalkSpeed = GRIEFER_CFG.BLOCK_MOVE_SPD end
+    gStopAll(0.2)
+    local bt = gTracks.block and gTracks.block[1]
+    if bt then bt.Looped = true; bt:Play(0.1); gActiveTrack = bt end
+end
+
+local function gStopBlock(char)
+    if not gState.active then return end
+    if not gState.blocking then return end
+    gState.blocking = false
+    local bt = gTracks.block and gTracks.block[1]
+    if bt and bt.IsPlaying then bt:Stop(0.2) end
+    local humanoid = char and char:FindFirstChildWhichIsA("Humanoid")
+    if humanoid then humanoid.WalkSpeed = GRIEFER_CFG.NORMAL_SPEED end
+    gRefreshMovement(char)
+end
+
+-- Wire up griefer button
+grieferBtn.MouseButton1Click:Connect(function()
+    toggles.grieferMode = not toggles.grieferMode
+    local on = toggles.grieferMode
+
+    grieferBtn.Text = on and "ON" or "OFF"
+    tw(grieferBtn, 0.18, {
+        BackgroundColor3 = on and Color3.fromRGB(140, 0, 255) or Color3.fromRGB(200, 35, 35)
+    })
+    grieferBtnStroke.Color = on and Color3.fromRGB(200, 80, 255) or Color3.fromRGB(255, 60, 60)
+    grieferColorBar(on)
+
+    local char = lp.Character
+    if not char then return end
+
+    if on then
+        -- Entering griefer mode: shut down sun god
+        gState.active = true
+        grieferGui.Enabled = true
+
+        -- Hide sun orb and title
+        if sunOrb then sunOrb.Transparency = 1
+            if sunFire   then sunFire.Enabled   = false end
+            if sunCorona then sunCorona.Enabled = false end
+        end
+        if titleBillboard then titleBillboard.Enabled = false end
+
+        -- Stop charge if active
+        local hrp2 = char:FindFirstChild("HumanoidRootPart")
+        if isCharging and hrp2 then toggleCharge(hrp2) end
+
+        -- Hide sun god bars
+        if chargeBar then chargeBar.Visible = false end
+        if dashBar   then dashBar.Visible   = false end
+
+        startGrieferMode(char)
+    else
+        -- Leaving griefer mode: restore sun god
+        gState.active = false
+        grieferGui.Enabled = false
+
+        stopGrieferMode(char)
+
+        -- Restore sun orb
+        if sunOrb and toggles.sunOrb then
+            sunOrb.Transparency = 0.2
+            if sunFire   then sunFire.Enabled   = true end
+            if sunCorona then sunCorona.Enabled = true end
+        end
+        if titleBillboard then titleBillboard.Enabled = true end
+
+        -- Restore sun god bars
+        if chargeBar then chargeBar.Visible = true end
+        if dashBar   then dashBar.Visible   = true end
+    end
+end)
+
+-- Griefer input connections (always listening, gated by gState.active)
+UserInputService.InputBegan:Connect(function(input, gp)
+    if gp or not gState.active then return end
+    local char = lp.Character
+    if not char then return end
+
+    if input.UserInputType == Enum.UserInputType.MouseButton1 then
+        task.spawn(function()
+            gDoDash(char)
+            gDoAttack(char)
+        end)
+    elseif input.KeyCode == Enum.KeyCode.LeftShift then
+        gState.shiftHeld = true
+    elseif input.KeyCode == Enum.KeyCode.F then
+        gStartBlock(char)
+    end
+end)
+
+UserInputService.InputEnded:Connect(function(input)
+    if not gState.active then return end
+    local char = lp.Character
+    if input.KeyCode == Enum.KeyCode.LeftShift then
+        gState.shiftHeld = false
+    elseif input.KeyCode == Enum.KeyCode.F then
+        gStopBlock(char)
+    end
+end)
+
+--// ═══════════════════════════════════════════════════════════════
 local function createSunOrb(hrp)
     if not toggles.sunOrb then return end
+    if gState.active then return end   -- griefer mode: no sun orb
     if sunOrb then sunOrb:Destroy() end
     if not hrp or not hrp.Parent then return end
 
@@ -1233,88 +1920,55 @@ local function createSunOrb(hrp)
     light.Range      = 30
     light.Color      = persistentLightColor
 
+    -- Main fire emitter: bigger particles, phase-colored from the start
     sunFire = Instance.new("ParticleEmitter", sunOrb)
     sunFire.Texture      = "rbxasset://textures/particles/fire_main.dds"
-    sunFire.Color        = ColorSequence.new{
-        ColorSequenceKeypoint.new(0,   Color3.fromRGB(255, 255, 120)),
-        ColorSequenceKeypoint.new(0.3, Color3.fromRGB(255, 220, 60)),
-        ColorSequenceKeypoint.new(0.7, Color3.fromRGB(255, 100, 10)),
-        ColorSequenceKeypoint.new(1,   Color3.fromRGB(180, 30, 0)),
-    }
+    sunFire.Color        = SUN_ORB_FIRE_COLORS[chargePhase] or SUN_ORB_FIRE_COLORS[1]
     sunFire.Size         = NumberSequence.new{
-        NumberSequenceKeypoint.new(0, 4.2),
-        NumberSequenceKeypoint.new(0.4, 5.5),
-        NumberSequenceKeypoint.new(1, 0.4),
+        NumberSequenceKeypoint.new(0,   3.5),
+        NumberSequenceKeypoint.new(0.3, 5.5),
+        NumberSequenceKeypoint.new(0.7, 3.8),
+        NumberSequenceKeypoint.new(1,   0.4),
     }
-    sunFire.Lifetime     = NumberRange.new(1.2, 2.8)
-    sunFire.Rate         = 260
-    sunFire.Speed        = NumberRange.new(8, 24)
+    sunFire.Lifetime     = NumberRange.new(2.0, 4.2)
+    sunFire.Rate         = 65
+    sunFire.Speed        = NumberRange.new(3, 10)
     sunFire.SpreadAngle  = Vector2.new(360, 360)
-    sunFire.RotSpeed     = NumberRange.new(-220, 220)
+    sunFire.RotSpeed     = NumberRange.new(-180, 180)
     sunFire.LightEmission = 1
     sunFire.Transparency = NumberSequence.new{
         NumberSequenceKeypoint.new(0,   0.0),
-        NumberSequenceKeypoint.new(0.5, 0.15),
-        NumberSequenceKeypoint.new(1,   1),
+        NumberSequenceKeypoint.new(0.4, 0.15),
+        NumberSequenceKeypoint.new(0.8, 0.55),
+        NumberSequenceKeypoint.new(1,   1.0),
     }
     sunFire.Enabled = true
 
-    sunInnerSpark = Instance.new("ParticleEmitter", sunOrb)
-    sunInnerSpark.Texture      = "rbxasset://textures/particles/sparkles.png"
-    sunInnerSpark.Color        = ColorSequence.new{
-        ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 255, 200)),
-        ColorSequenceKeypoint.new(1, Color3.fromRGB(255, 200, 50)),
+    -- Soft corona halo: bigger and phase-colored
+    sunCorona = Instance.new("ParticleEmitter", sunOrb)
+    sunCorona.Texture       = "rbxasset://textures/whiteCircle.png"
+    sunCorona.Color         = SUN_ORB_CORONA_COLORS[chargePhase] or SUN_ORB_CORONA_COLORS[1]
+    sunCorona.Size          = NumberSequence.new{
+        NumberSequenceKeypoint.new(0,   6.0),
+        NumberSequenceKeypoint.new(0.5, 9.0),
+        NumberSequenceKeypoint.new(1,   0),
     }
-    sunInnerSpark.Size         = NumberSequence.new{
-        NumberSequenceKeypoint.new(0, 0.6),
-        NumberSequenceKeypoint.new(0.5, 1.4),
-        NumberSequenceKeypoint.new(1, 0),
+    sunCorona.Lifetime      = NumberRange.new(2.2, 4.5)
+    sunCorona.Rate          = 8
+    sunCorona.Speed         = NumberRange.new(0, 2)
+    sunCorona.SpreadAngle   = Vector2.new(360, 360)
+    sunCorona.LightEmission = 0.6
+    sunCorona.Transparency  = NumberSequence.new{
+        NumberSequenceKeypoint.new(0,   0.88),
+        NumberSequenceKeypoint.new(0.5, 0.72),
+        NumberSequenceKeypoint.new(1,   1.0),
     }
-    sunInnerSpark.Lifetime     = NumberRange.new(0.6, 1.4)
-    sunInnerSpark.Rate         = 120
-    sunInnerSpark.Speed        = NumberRange.new(12, 30)
-    sunInnerSpark.SpreadAngle  = Vector2.new(360, 360)
-    sunInnerSpark.RotSpeed     = NumberRange.new(-300, 300)
-    sunInnerSpark.LightEmission = 1
-    sunInnerSpark.Transparency = NumberSequence.new{
-        NumberSequenceKeypoint.new(0, 0),
-        NumberSequenceKeypoint.new(0.6, 0.2),
-        NumberSequenceKeypoint.new(1, 1),
-    }
-    sunInnerSpark.Enabled = true
-
-    sunEmbers = Instance.new("ParticleEmitter", sunOrb)
-    sunEmbers.Texture      = "rbxasset://textures/whiteCircle.png"
-    sunEmbers.Color        = ColorSequence.new{
-        ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 230, 80)),
-        ColorSequenceKeypoint.new(0.5, Color3.fromRGB(255, 120, 0)),
-        ColorSequenceKeypoint.new(1, Color3.fromRGB(200, 40, 0)),
-    }
-    sunEmbers.Size         = NumberSequence.new{
-        NumberSequenceKeypoint.new(0, 0.3),
-        NumberSequenceKeypoint.new(0.5, 0.55),
-        NumberSequenceKeypoint.new(1, 0),
-    }
-    sunEmbers.Lifetime     = NumberRange.new(1.5, 3.5)
-    sunEmbers.Rate         = 55
-    sunEmbers.Speed        = NumberRange.new(18, 40)
-    sunEmbers.SpreadAngle  = Vector2.new(360, 360)
-    sunEmbers.LightEmission = 0.8
-    sunEmbers.Transparency = NumberSequence.new{
-        NumberSequenceKeypoint.new(0, 0.2),
-        NumberSequenceKeypoint.new(0.5, 0.5),
-        NumberSequenceKeypoint.new(1, 1),
-    }
-    sunEmbers.Enabled = true
+    sunCorona.Enabled = true
 
     tw(sunOrb, CFG.sunSummonTime, {
         Size     = Vector3.new(CFG.sunSize, CFG.sunSize, CFG.sunSize),
         Position = hrp.Position + hrp.CFrame.LookVector * -CFG.behindDist + Vector3.new(0, 5, 0),
     }, Enum.EasingStyle.Back)
-
-    task.delay(CFG.sunSummonTime - 0.2, function()
-        if sunFire and toggles.sunOrb then sunFire:Emit(80) end
-    end)
 
     if sunConn then sunConn:Disconnect() end
     sunConn = RunService.Heartbeat:Connect(function()
@@ -1399,86 +2053,151 @@ local function playOnly(track, fade, speed)
     pcall(track.Play, track, fade or 0.1, 1, speed or 1)
 end
 
---// DASH TRAIL + BALL (full per-phase colors)
+--// DASH TRAIL — burst ball and all emitters use live chargePhase at time of dash
 local function makeDashTrail(hrp)
-    local phase = isCharging and chargePhase or 1
+    -- Snapshot the current phase at the moment of the dash
+    local phase = orbPhase
+    local cols  = DASH_BALL_COLORS[phase] or DASH_BALL_COLORS[1]
 
-    -- Colored trail
+    -- Main wide motion trail
     local trail = Instance.new("Trail")
-    local a0 = Instance.new("Attachment", hrp); a0.Position = Vector3.new(0,  4, 0)
-    local a1 = Instance.new("Attachment", hrp); a1.Position = Vector3.new(0, -4, 0)
+    local a0 = Instance.new("Attachment", hrp); a0.Position = Vector3.new(0,  5, 0)
+    local a1 = Instance.new("Attachment", hrp); a1.Position = Vector3.new(0, -5, 0)
     trail.Attachment0   = a0
     trail.Attachment1   = a1
-    trail.Lifetime      = 0.20
-    trail.MinLength     = 0.05
-    trail.Transparency  = NumberSequence.new{ NumberSequenceKeypoint.new(0, 0), NumberSequenceKeypoint.new(1, 1) }
-    trail.WidthScale    = NumberSequence.new{ NumberSequenceKeypoint.new(0, 7), NumberSequenceKeypoint.new(1, 0) }
+    trail.Lifetime      = 0.18
+    trail.MinLength     = 0.04
+    trail.Transparency  = NumberSequence.new{ NumberSequenceKeypoint.new(0, 0.0), NumberSequenceKeypoint.new(0.4, 0.2), NumberSequenceKeypoint.new(1, 1) }
+    trail.WidthScale    = NumberSequence.new{ NumberSequenceKeypoint.new(0, 9), NumberSequenceKeypoint.new(0.5, 5), NumberSequenceKeypoint.new(1, 0) }
     trail.Color         = DASH_TRAIL_COLORS[phase] or DASH_TRAIL_COLORS[1]
-    trail.LightEmission = 0.85
+    trail.LightEmission = 1.0
     trail.Parent        = hrp
-    Debris:AddItem(trail, 0.5)
-    Debris:AddItem(a0, 0.5)
-    Debris:AddItem(a1, 0.5)
+    Debris:AddItem(trail, 0.5); Debris:AddItem(a0, 0.5); Debris:AddItem(a1, 0.5)
 
-    -- Flame ball particle burst (phase-colored)
-    local cols = DASH_BALL_COLORS[phase] or DASH_BALL_COLORS[1]
-    local ballAtt = Instance.new("Attachment", hrp)
-    ballAtt.Position = Vector3.new(0, 0, 0)
+    -- Inner sharp core trail
+    local coreTrail = Instance.new("Trail")
+    local c0 = Instance.new("Attachment", hrp); c0.Position = Vector3.new(0, 1, 0)
+    local c1 = Instance.new("Attachment", hrp); c1.Position = Vector3.new(0,-1, 0)
+    coreTrail.Attachment0   = c0
+    coreTrail.Attachment1   = c1
+    coreTrail.Lifetime      = 0.10
+    coreTrail.MinLength     = 0.02
+    coreTrail.Transparency  = NumberSequence.new{ NumberSequenceKeypoint.new(0, 0), NumberSequenceKeypoint.new(1, 1) }
+    coreTrail.WidthScale    = NumberSequence.new{ NumberSequenceKeypoint.new(0, 2.5), NumberSequenceKeypoint.new(1, 0) }
+    coreTrail.Color         = ColorSequence.new(Color3.fromRGB(255,255,255))
+    coreTrail.LightEmission = 1.0
+    coreTrail.Parent        = hrp
+    Debris:AddItem(coreTrail, 0.4); Debris:AddItem(c0, 0.4); Debris:AddItem(c1, 0.4)
 
-    local ball = Instance.new("ParticleEmitter", ballAtt)
-    ball.Texture       = "rbxasset://textures/whiteCircle.png"
-    ball.Color         = ColorSequence.new{
-        ColorSequenceKeypoint.new(0,   cols[1]),
-        ColorSequenceKeypoint.new(0.5, cols[2]),
-        ColorSequenceKeypoint.new(1,   cols[3]),
-    }
-    ball.Size          = NumberSequence.new{
-        NumberSequenceKeypoint.new(0,   1.8),
-        NumberSequenceKeypoint.new(0.3, 3.5),
-        NumberSequenceKeypoint.new(0.7, 2.2),
-        NumberSequenceKeypoint.new(1,   0),
-    }
-    ball.Lifetime      = NumberRange.new(0.18, 0.40)
-    ball.Rate          = 0
-    ball.Speed         = NumberRange.new(14, 38)
-    ball.SpreadAngle   = Vector2.new(360, 360)
-    ball.RotSpeed      = NumberRange.new(-250, 250)
-    ball.LightEmission = 1
-    ball.Transparency  = NumberSequence.new{
-        NumberSequenceKeypoint.new(0,   0.0),
-        NumberSequenceKeypoint.new(0.4, 0.1),
-        NumberSequenceKeypoint.new(1,   1.0),
-    }
-    ball:Emit(60 + chargePhase * 20)
+    -- Burst ball — phase-colored, emitted from both hands
+    local char = lp.Character
+    local handNames = {"RightHand", "LeftHand", "Right Arm", "Left Arm"}
+    local hands = {}
+    if char then
+        for _, n in ipairs(handNames) do
+            local h = char:FindFirstChild(n)
+            if h and not (n == "Right Arm" and #hands >= 1) and not (n == "Left Arm" and #hands >= 2) then
+                hands[#hands + 1] = h
+            end
+        end
+    end
+    -- fallback: emit from hrp if no hands found
+    if #hands == 0 then hands = {hrp} end
 
-    -- Sparkle layer
-    local spark = Instance.new("ParticleEmitter", ballAtt)
-    spark.Texture       = "rbxasset://textures/particles/sparkles.png"
-    spark.Color         = ColorSequence.new{
-        ColorSequenceKeypoint.new(0, cols[1]),
-        ColorSequenceKeypoint.new(1, cols[2]),
-    }
-    spark.Size          = NumberSequence.new{ NumberSequenceKeypoint.new(0, 0.4), NumberSequenceKeypoint.new(0.5, 1.0), NumberSequenceKeypoint.new(1, 0) }
-    spark.Lifetime      = NumberRange.new(0.2, 0.5)
-    spark.Rate          = 0
-    spark.Speed         = NumberRange.new(20, 50)
-    spark.SpreadAngle   = Vector2.new(360, 360)
-    spark.LightEmission = 1
-    spark.Transparency  = NumberSequence.new{ NumberSequenceKeypoint.new(0, 0), NumberSequenceKeypoint.new(1, 1) }
-    spark:Emit(40 + chargePhase * 15)
+    -- Shared size params
+    local ballSizeBase = 1.2 + phase * 0.35
+    local ballSizePeak = 2.5 + phase * 0.55
 
-    Debris:AddItem(ballAtt, 0.7)
+    for _, handPart in ipairs(hands) do
+        -- Use a temporary Part anchored at the hand so destroying the
+        -- attachment later doesn't kill mid-flight particles
+        local ghost = Instance.new("Part")
+        ghost.Anchored   = true
+        ghost.CanCollide = false
+        ghost.Transparency = 1
+        ghost.Size       = Vector3.new(0.1, 0.1, 0.1)
+        ghost.CFrame     = handPart.CFrame
+        ghost.Parent     = workspace
+        Debris:AddItem(ghost, 1.5)  -- outlives all particle lifetimes
+
+        local ballAtt = Instance.new("Attachment", ghost)
+
+        local ball = Instance.new("ParticleEmitter", ballAtt)
+        ball.Texture       = "rbxasset://textures/particles/fire_main.dds"
+        ball.Color         = ColorSequence.new{
+            ColorSequenceKeypoint.new(0,   cols[1]),
+            ColorSequenceKeypoint.new(0.5, cols[2]),
+            ColorSequenceKeypoint.new(1,   cols[3]),
+        }
+        ball.Size          = NumberSequence.new{
+            NumberSequenceKeypoint.new(0,   ballSizeBase),
+            NumberSequenceKeypoint.new(0.2, ballSizePeak),
+            NumberSequenceKeypoint.new(0.6, ballSizeBase * 1.1),
+            NumberSequenceKeypoint.new(1,   0),
+        }
+        ball.Lifetime      = NumberRange.new(0.35, 0.75)
+        ball.Rate          = 0
+        ball.Speed         = NumberRange.new(10 + phase * 3, 30 + phase * 6)
+        ball.SpreadAngle   = Vector2.new(360, 360)
+        ball.RotSpeed      = NumberRange.new(-300, 300)
+        ball.LightEmission = 1
+        ball.Transparency  = NumberSequence.new{
+            NumberSequenceKeypoint.new(0,   0.0),
+            NumberSequenceKeypoint.new(0.3, 0.05),
+            NumberSequenceKeypoint.new(1,   1.0),
+        }
+        ball:Emit(40 + phase * 15)
+
+        local streaks = Instance.new("ParticleEmitter", ballAtt)
+        streaks.Texture       = "rbxassetid://6101261905"
+        streaks.Color         = ColorSequence.new{
+            ColorSequenceKeypoint.new(0, cols[1]),
+            ColorSequenceKeypoint.new(1, Color3.fromRGB(255, 255, 255)),
+        }
+        streaks.Size          = NumberSequence.new{
+            NumberSequenceKeypoint.new(0,   0.12 + phase * 0.03),
+            NumberSequenceKeypoint.new(0.5, 0.28 + phase * 0.06),
+            NumberSequenceKeypoint.new(1,   0),
+        }
+        streaks.Lifetime      = NumberRange.new(0.10, 0.28)
+        streaks.Rate          = 0
+        streaks.Speed         = NumberRange.new(20 + phase * 6, 55 + phase * 12)
+        streaks.SpreadAngle   = Vector2.new(35, 35)
+        streaks.LightEmission = 1
+        streaks.Transparency  = NumberSequence.new{ NumberSequenceKeypoint.new(0, 0), NumberSequenceKeypoint.new(1, 1) }
+        streaks:Emit(20 + phase * 8)
+    end
+
+    -- Shockwave ring at hrp center
+    local ringAtt = Instance.new("Attachment", hrp)
+    ringAtt.Position = Vector3.new(0, 0, 0)
+    local ring = Instance.new("ParticleEmitter", ringAtt)
+    ring.Texture      = "rbxasset://textures/whiteCircle.png"
+    ring.Color        = ColorSequence.new(cols[1])
+    ring.Size         = NumberSequence.new{
+        NumberSequenceKeypoint.new(0,   0),
+        NumberSequenceKeypoint.new(0.3, 6 + phase * 2),
+        NumberSequenceKeypoint.new(1,   10 + phase * 3),
+    }
+    ring.Lifetime     = NumberRange.new(0.22, 0.32)
+    ring.Rate         = 0
+    ring.Speed        = NumberRange.new(0)
+    ring.LightEmission = 1
+    ring.Transparency = NumberSequence.new{
+        NumberSequenceKeypoint.new(0,   1),
+        NumberSequenceKeypoint.new(0.2, 0.15),
+        NumberSequenceKeypoint.new(0.7, 0.55),
+        NumberSequenceKeypoint.new(1,   1),
+    }
+    ring.Orientation  = Enum.ParticleOrientation.FacingCamera
+    ring:Emit(1)
+
+    Debris:AddItem(ringAtt, 0.6)
 end
 
---// PUNCH HELPERS
+--// PUNCH
 local function getPunchFlameColor()
-    if not isCharging then
-        return ColorSequence.new{
-            ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 220,  0)),
-            ColorSequenceKeypoint.new(1, Color3.fromRGB(255,  50,  0)),
-        }
-    end
-    local cols = DASH_BALL_COLORS[chargePhase] or DASH_BALL_COLORS[1]
+    local cols = DASH_BALL_COLORS[orbPhase] or DASH_BALL_COLORS[1]
     return ColorSequence.new{
         ColorSequenceKeypoint.new(0,   cols[1]),
         ColorSequenceKeypoint.new(0.5, cols[2]),
@@ -1578,43 +2297,89 @@ local function doPunch(character)
     playSound(CFG.punchSound, hand or character, 0.85, stats.pitch)
 
     if hand then
+        local flameCol = getPunchFlameColor()
+
         local pe = Instance.new("ParticleEmitter", hand)
-        pe.Texture       = "rbxasset://textures/whiteCircle.png"
+        pe.Texture       = "rbxasset://textures/particles/fire_main.dds"
         pe.Size          = NumberSequence.new{
-            NumberSequenceKeypoint.new(0,   0.4),
-            NumberSequenceKeypoint.new(0.3, 2.0),
-            NumberSequenceKeypoint.new(0.7, 1.2),
+            NumberSequenceKeypoint.new(0,   0.5),
+            NumberSequenceKeypoint.new(0.3, 2.8),
+            NumberSequenceKeypoint.new(0.7, 1.8),
             NumberSequenceKeypoint.new(1,   0),
         }
-        pe.Lifetime      = NumberRange.new(0.4, stats.cooldown * 0.55)
-        pe.Rate          = 500
-        pe.Speed         = NumberRange.new(6, 18)
+        pe.Lifetime      = NumberRange.new(0.35, stats.cooldown * 0.50)
+        pe.Rate          = 600
+        pe.Speed         = NumberRange.new(8, 22)
         pe.SpreadAngle   = Vector2.new(360, 360)
-        pe.RotSpeed      = NumberRange.new(-200, 200)
+        pe.RotSpeed      = NumberRange.new(-220, 220)
         pe.LightEmission = 1
         pe.Transparency  = NumberSequence.new{
-            NumberSequenceKeypoint.new(0, 0),
-            NumberSequenceKeypoint.new(0.5, 0.15),
-            NumberSequenceKeypoint.new(1, 1),
+            NumberSequenceKeypoint.new(0,   0.0),
+            NumberSequenceKeypoint.new(0.4, 0.1),
+            NumberSequenceKeypoint.new(1,   1.0),
         }
-        pe.Color = getPunchFlameColor()
+        pe.Color = flameCol
 
         local sp = Instance.new("ParticleEmitter", hand)
         sp.Texture       = "rbxasset://textures/particles/sparkles.png"
-        sp.Size          = NumberSequence.new{ NumberSequenceKeypoint.new(0, 0.3), NumberSequenceKeypoint.new(0.5, 0.8), NumberSequenceKeypoint.new(1, 0) }
-        sp.Lifetime      = NumberRange.new(0.25, 0.6)
-        sp.Rate          = 200
-        sp.Speed         = NumberRange.new(10, 28)
+        sp.Size          = NumberSequence.new{
+            NumberSequenceKeypoint.new(0,   0.6),
+            NumberSequenceKeypoint.new(0.35, 1.5),
+            NumberSequenceKeypoint.new(0.7,  0.8),
+            NumberSequenceKeypoint.new(1,    0),
+        }
+        sp.Lifetime      = NumberRange.new(0.25, 0.65)
+        sp.Rate          = 280
+        sp.Speed         = NumberRange.new(12, 32)
         sp.SpreadAngle   = Vector2.new(360, 360)
         sp.LightEmission = 1
         sp.Transparency  = NumberSequence.new{ NumberSequenceKeypoint.new(0, 0), NumberSequenceKeypoint.new(1, 1) }
-        sp.Color         = getPunchFlameColor()
+        sp.Color         = flameCol
 
-        local burstTime = stats.cooldown * 0.65
+        local ringAtt = Instance.new("Attachment", hand)
+        local impactRing = Instance.new("ParticleEmitter", ringAtt)
+        local ringCol = DASH_BALL_COLORS[orbPhase][1]
+        impactRing.Texture      = "rbxasset://textures/whiteCircle.png"
+        impactRing.Color        = ColorSequence.new(ringCol)
+        impactRing.Size         = NumberSequence.new{
+            NumberSequenceKeypoint.new(0,   0),
+            NumberSequenceKeypoint.new(0.3, 5 + chargePhase),
+            NumberSequenceKeypoint.new(1,   8 + chargePhase * 2),
+        }
+        impactRing.Lifetime     = NumberRange.new(0.18, 0.28)
+        impactRing.Rate         = 0
+        impactRing.Speed        = NumberRange.new(0)
+        impactRing.LightEmission = 1
+        impactRing.Transparency = NumberSequence.new{
+            NumberSequenceKeypoint.new(0, 1), NumberSequenceKeypoint.new(0.2, 0.1),
+            NumberSequenceKeypoint.new(0.7, 0.5), NumberSequenceKeypoint.new(1, 1),
+        }
+        impactRing.Orientation = Enum.ParticleOrientation.FacingCamera
+        impactRing:Emit(2)
+
+        local streaks = Instance.new("ParticleEmitter", hand)
+        streaks.Texture       = "rbxassetid://6101261905"
+        streaks.Color         = flameCol
+        streaks.Size          = NumberSequence.new{
+            NumberSequenceKeypoint.new(0,   0.2),
+            NumberSequenceKeypoint.new(0.5, 0.5),
+            NumberSequenceKeypoint.new(1,   0),
+        }
+        streaks.Lifetime      = NumberRange.new(0.10, 0.22)
+        streaks.Rate          = 0
+        streaks.Speed         = NumberRange.new(40, 90)
+        streaks.SpreadAngle   = Vector2.new(18, 18)
+        streaks.LightEmission = 1
+        streaks.Transparency  = NumberSequence.new{ NumberSequenceKeypoint.new(0, 0), NumberSequenceKeypoint.new(1, 1) }
+        streaks:Emit(20 + chargePhase * 8)
+
+        local burstTime = stats.cooldown * 0.60
         task.delay(burstTime, function()
             if pe and pe.Parent then pe.Enabled = false; Debris:AddItem(pe, 0.6) end
             if sp and sp.Parent then sp.Enabled = false; Debris:AddItem(sp, 0.6) end
+            if streaks and streaks.Parent then Debris:AddItem(streaks, 0.1) end
         end)
+        Debris:AddItem(ringAtt, 0.5)
     end
 
     task.delay(stats.cooldown, function() punchCooldown = false end)
@@ -1687,28 +2452,42 @@ local function setupCharge(hrp)
     chargeParticles = makeParticle(
         "rbxasset://textures/particles/sparkles.png",
         ColorSequence.new{
-            ColorSequenceKeypoint.new(0,   Color3.fromRGB(255, 255, 120)),
-            ColorSequenceKeypoint.new(0.5, Color3.fromRGB(255, 220,   0)),
+            ColorSequenceKeypoint.new(0,   Color3.fromRGB(255, 255, 140)),
+            ColorSequenceKeypoint.new(0.4, Color3.fromRGB(255, 230,  20)),
             ColorSequenceKeypoint.new(1,   Color3.fromRGB(255, 140,   0)),
         },
-        { NumberSequenceKeypoint.new(0,0.3), NumberSequenceKeypoint.new(0.35,2.2), NumberSequenceKeypoint.new(0.7,1.4), NumberSequenceKeypoint.new(1,0) },
-        {0.6, 2.0}, 0, {10, 22}
+        { NumberSequenceKeypoint.new(0,0.4), NumberSequenceKeypoint.new(0.3,2.8), NumberSequenceKeypoint.new(0.65,1.8), NumberSequenceKeypoint.new(1,0) },
+        {0.5, 1.8}, 0, {12, 26}
     )
-    chargeParticles.RotSpeed = NumberRange.new(150, 400)
+    chargeParticles.RotSpeed = NumberRange.new(200, 500)
     chargeParticles.ZOffset  = 2
 
-    local chargeParticles2 = makeParticle(
+    chargeParticles2 = makeParticle(
         "rbxasset://textures/particles/sparkles.png",
         ColorSequence.new{
             ColorSequenceKeypoint.new(0,   Color3.fromRGB(255, 255, 255)),
-            ColorSequenceKeypoint.new(0.5, Color3.fromRGB(255, 255, 100)),
-            ColorSequenceKeypoint.new(1,   Color3.fromRGB(255, 180,   0)),
+            ColorSequenceKeypoint.new(0.5, Color3.fromRGB(255, 255, 120)),
+            ColorSequenceKeypoint.new(1,   Color3.fromRGB(255, 200,   0)),
         },
-        { NumberSequenceKeypoint.new(0,0.2), NumberSequenceKeypoint.new(0.4,1.0), NumberSequenceKeypoint.new(1,0) },
-        {0.3, 1.1}, 0, {6, 14}
+        { NumberSequenceKeypoint.new(0,0.2), NumberSequenceKeypoint.new(0.4,1.2), NumberSequenceKeypoint.new(1,0) },
+        {0.25, 0.9}, 0, {5, 13}
     )
-    chargeParticles2.RotSpeed = NumberRange.new(-400, -120)
+    chargeParticles2.RotSpeed = NumberRange.new(-500, -200)
     chargeParticles2.ZOffset  = 1
+
+    embers = makeParticle(
+        "rbxasset://textures/whiteCircle.png",
+        ColorSequence.new{
+            ColorSequenceKeypoint.new(0,   Color3.fromRGB(255, 240, 100)),
+            ColorSequenceKeypoint.new(0.5, Color3.fromRGB(255, 160,  20)),
+            ColorSequenceKeypoint.new(1,   Color3.fromRGB(200,  60,   0)),
+        },
+        { NumberSequenceKeypoint.new(0,0.25), NumberSequenceKeypoint.new(0.5,0.55), NumberSequenceKeypoint.new(1,0) },
+        {1.2, 2.8}, 0, {2, 8}
+    )
+    embers.SpreadAngle = Vector2.new(40, 40)
+    embers.RotSpeed    = NumberRange.new(-80, 80)
+    embers.ZOffset     = 0
 
     local function makeRing(col, sizePts, life, transP)
         local pe = Instance.new("ParticleEmitter", chargeAtt)
@@ -1725,46 +2504,46 @@ local function setupCharge(hrp)
     end
 
     ringParticles = makeRing(
-        Color3.fromRGB(255, 255, 255),
-        { NumberSequenceKeypoint.new(0,0), NumberSequenceKeypoint.new(0.15,7), NumberSequenceKeypoint.new(0.5,12), NumberSequenceKeypoint.new(1,14) },
-        1.1,
-        { NumberSequenceKeypoint.new(0,1), NumberSequenceKeypoint.new(0.15,0), NumberSequenceKeypoint.new(0.8,0.1), NumberSequenceKeypoint.new(1,1) }
+        Color3.fromRGB(255, 255, 220),
+        { NumberSequenceKeypoint.new(0,0), NumberSequenceKeypoint.new(0.12,6), NumberSequenceKeypoint.new(0.5,13), NumberSequenceKeypoint.new(1,16) },
+        1.0,
+        { NumberSequenceKeypoint.new(0,1), NumberSequenceKeypoint.new(0.12,0.0), NumberSequenceKeypoint.new(0.75,0.15), NumberSequenceKeypoint.new(1,1) }
     )
     yellowRingParticles = makeRing(
-        Color3.fromRGB(255, 240, 0),
-        { NumberSequenceKeypoint.new(0,0), NumberSequenceKeypoint.new(0.2,5), NumberSequenceKeypoint.new(0.6,9), NumberSequenceKeypoint.new(1,10) },
-        0.9,
-        { NumberSequenceKeypoint.new(0,1), NumberSequenceKeypoint.new(0.2,0.1), NumberSequenceKeypoint.new(0.75,0.3), NumberSequenceKeypoint.new(1,1) }
+        Color3.fromRGB(255, 230, 0),
+        { NumberSequenceKeypoint.new(0,0), NumberSequenceKeypoint.new(0.2,4), NumberSequenceKeypoint.new(0.6,8), NumberSequenceKeypoint.new(1,9) },
+        0.75,
+        { NumberSequenceKeypoint.new(0,1), NumberSequenceKeypoint.new(0.2,0.05), NumberSequenceKeypoint.new(0.7,0.35), NumberSequenceKeypoint.new(1,1) }
     )
 
     local innerRing = makeRing(
         Color3.fromRGB(255, 200, 60),
-        { NumberSequenceKeypoint.new(0,0), NumberSequenceKeypoint.new(0.25,3), NumberSequenceKeypoint.new(1,5) },
-        0.65,
-        { NumberSequenceKeypoint.new(0,1), NumberSequenceKeypoint.new(0.25,0.2), NumberSequenceKeypoint.new(1,1) }
+        { NumberSequenceKeypoint.new(0,0), NumberSequenceKeypoint.new(0.25,2.5), NumberSequenceKeypoint.new(1,4) },
+        0.55,
+        { NumberSequenceKeypoint.new(0,1), NumberSequenceKeypoint.new(0.25,0.15), NumberSequenceKeypoint.new(1,1) }
     )
 
     centralGlow = Instance.new("ParticleEmitter", chargeAtt)
     centralGlow.Texture  = "rbxasset://textures/whiteCircle.png"
     centralGlow.Color    = ColorSequence.new{
-        ColorSequenceKeypoint.new(0,   Color3.fromRGB(255, 255, 200)),
-        ColorSequenceKeypoint.new(0.4, Color3.fromRGB(255, 240,  80)),
-        ColorSequenceKeypoint.new(1,   Color3.fromRGB(255, 180,   0)),
+        ColorSequenceKeypoint.new(0,   Color3.fromRGB(255, 255, 220)),
+        ColorSequenceKeypoint.new(0.4, Color3.fromRGB(255, 230,  80)),
+        ColorSequenceKeypoint.new(1,   Color3.fromRGB(255, 150,   0)),
     }
     centralGlow.Size     = NumberSequence.new{
-        NumberSequenceKeypoint.new(0,   3.5),
-        NumberSequenceKeypoint.new(0.4, 4.8),
-        NumberSequenceKeypoint.new(0.7, 4.0),
-        NumberSequenceKeypoint.new(1,   2.5),
+        NumberSequenceKeypoint.new(0,   4.0),
+        NumberSequenceKeypoint.new(0.3, 6.5),
+        NumberSequenceKeypoint.new(0.6, 5.0),
+        NumberSequenceKeypoint.new(1,   3.0),
     }
-    centralGlow.Lifetime = NumberRange.new(0.4, 0.7)
+    centralGlow.Lifetime = NumberRange.new(0.35, 0.65)
     centralGlow.Rate     = 0
     centralGlow.LightEmission = 1
     centralGlow.Speed    = NumberRange.new(0)
     centralGlow.Transparency = NumberSequence.new{
-        NumberSequenceKeypoint.new(0,   0.3),
-        NumberSequenceKeypoint.new(0.5, 0.1),
-        NumberSequenceKeypoint.new(1,   0.6),
+        NumberSequenceKeypoint.new(0,   0.25),
+        NumberSequenceKeypoint.new(0.4, 0.05),
+        NumberSequenceKeypoint.new(1,   0.7),
     }
 
     for _, b in ipairs(lightningBeams) do
@@ -1841,6 +2620,9 @@ local function toggleCharge(hrp)
     local humanoid = char and char:FindFirstChildWhichIsA("Humanoid")
     if not humanoid then return end
 
+    -- Cancel any active emote before charging
+    if isEmoting then stopEmote() end
+
     setupCharge(hrp)
     isCharging = not isCharging
 
@@ -1848,29 +2630,14 @@ local function toggleCharge(hrp)
         persistentSunColor  = CFG.sunColor
         persistentLightColor = CFG.sunColor
 
-        if sunOrb then
-            tw(sunOrb, 0.4, { Color = persistentSunColor })
-            local light = sunOrb:FindFirstChildWhichIsA("PointLight")
-            if light then tw(light, 0.4, { Color = persistentLightColor, Brightness = 4.5 }) end
-            if sunFire then
-                sunFire.Color = ColorSequence.new{
-                    ColorSequenceKeypoint.new(0,   Color3.fromRGB(255, 255, 80)),
-                    ColorSequenceKeypoint.new(0.4, Color3.fromRGB(255, 210, 60)),
-                    ColorSequenceKeypoint.new(1,   Color3.fromRGB(255,  50,  0)),
-                }
-                updateOrbParticleColors(
-                    { ColorSequenceKeypoint.new(0, Color3.fromRGB(255,255,80)), ColorSequenceKeypoint.new(0.4, Color3.fromRGB(255,210,60)), ColorSequenceKeypoint.new(1, Color3.fromRGB(255,50,0)) },
-                    { ColorSequenceKeypoint.new(0, Color3.fromRGB(255,255,200)), ColorSequenceKeypoint.new(1, Color3.fromRGB(255,200,50)) },
-                    { ColorSequenceKeypoint.new(0, Color3.fromRGB(255,230,80)), ColorSequenceKeypoint.new(0.5, Color3.fromRGB(255,120,0)), ColorSequenceKeypoint.new(1, Color3.fromRGB(200,40,0)) }
-                )
-            end
-        end
+        updateSunOrbPhase(1)
 
         originalWalkSpeed    = humanoid.WalkSpeed
         originalAnchored     = hrp.Anchored
         chargeBaseCF         = hrp.CFrame
 
         chargePhase            = 1
+        orbPhase               = 1
         fullPowerStartTime     = tick()
         phase3StartTime        = 0
         phase4StartTime        = 0
@@ -2075,7 +2842,14 @@ local function initCharacter(char)
     tracks = {}
 
     if sunOrb    then sunOrb:Destroy();    sunOrb    = nil end
+    sunFire   = nil
+    sunCorona = nil
     if chargeAtt then chargeAtt:Destroy(); chargeAtt = nil end
+
+    -- Clean up any active emote on respawn
+    if emoteTrack then pcall(emoteTrack.Stop, emoteTrack, 0) end
+    emoteTrack   = nil
+    isEmoting    = false
     for _, b in ipairs(lightningBeams) do
         if b.beam then b.beam:Destroy() end
         if b.a0   then b.a0:Destroy()  end
@@ -2137,7 +2911,19 @@ local function initCharacter(char)
     local nextAmbientDelay = 3 + math.random() * 4
 
     local function getAmbientPhaseColor()
-        return DASH_BALL_COLORS[chargePhase] or DASH_BALL_COLORS[1]
+        return DASH_BALL_COLORS[orbPhase] or DASH_BALL_COLORS[1]
+    end
+
+    -- Returns how long to wait before the next ambient trigger, scaling down with orbPhase
+    -- phase1: 3.5–7s  phase2: 2.5–5s  phase3: 1.5–3.2s  phase4: 0.9–2.2s  phase5: 0.6–1.4s
+    local AMBIENT_DELAY_MIN = { 3.5, 2.5, 1.5, 0.9,  0.6 }
+    local AMBIENT_DELAY_MAX = { 7.0, 5.0, 3.2, 2.2,  1.4 }
+
+    local function nextDelay()
+        local p   = math.clamp(orbPhase, 1, 5)
+        local mn  = AMBIENT_DELAY_MIN[p]
+        local mx  = AMBIENT_DELAY_MAX[p]
+        return mn + math.random() * (mx - mn)
     end
 
     local function doAmbientHandFire(character)
@@ -2148,43 +2934,61 @@ local function initCharacter(char)
         if lh then table.insert(hands, lh) end
         if #hands == 0 then return end
 
-        local targets = (math.random() < 0.4) and hands or { hands[math.random(1, #hands)] }
+        local p    = math.clamp(orbPhase, 1, 5)
+        -- At higher phases always fire both hands; at phase 1 only sometimes
+        local bothChance = 0.15 + p * 0.17   -- p1=0.32  p5=1.0
+        local targets = (math.random() < bothChance) and hands or { hands[math.random(1, #hands)] }
         local cols    = getAmbientPhaseColor()
 
+        -- Size and duration grow with phase
+        local sizeBase = 0.3 + p * 0.18    -- p1=0.48  p5=1.2
+        local sizePeak = 1.4 + p * 0.45    -- p1=1.85  p5=3.65
+        local duration = (0.4 + math.random() * 0.4) + p * 0.18
+
         for _, hand in ipairs(targets) do
-            local pe = Instance.new("ParticleEmitter", hand)
+            local ghost = Instance.new("Part")
+            ghost.Anchored    = true
+            ghost.CanCollide  = false
+            ghost.Transparency = 1
+            ghost.Size        = Vector3.new(0.1, 0.1, 0.1)
+            ghost.CFrame      = hand.CFrame
+            ghost.Parent      = workspace
+            Debris:AddItem(ghost, duration + 1.0)
+
+            local pe = Instance.new("ParticleEmitter", ghost)
             pe.Texture       = "rbxasset://textures/particles/fire_main.dds"
             pe.Size          = NumberSequence.new{
-                NumberSequenceKeypoint.new(0,   0.2),
-                NumberSequenceKeypoint.new(0.3, 0.9),
+                NumberSequenceKeypoint.new(0,   sizeBase),
+                NumberSequenceKeypoint.new(0.3, sizePeak),
+                NumberSequenceKeypoint.new(0.7, sizeBase * 1.2),
                 NumberSequenceKeypoint.new(1,   0),
             }
-            pe.Lifetime      = NumberRange.new(0.3, 0.7)
-            pe.Rate          = 180
-            pe.Speed         = NumberRange.new(4, 12)
-            pe.SpreadAngle   = Vector2.new(80, 80)
-            pe.RotSpeed      = NumberRange.new(-160, 160)
+            pe.Lifetime      = NumberRange.new(0.35 + p * 0.1, 0.8 + p * 0.2)
+            pe.Rate          = 60 + p * 30
+            pe.Speed         = NumberRange.new(2 + p, 8 + p * 2)
+            pe.SpreadAngle   = Vector2.new(70, 70)
+            pe.RotSpeed      = NumberRange.new(-140, 140)
             pe.LightEmission = 1
             pe.Transparency  = NumberSequence.new{
-                NumberSequenceKeypoint.new(0, 0),
-                NumberSequenceKeypoint.new(0.6, 0.3),
-                NumberSequenceKeypoint.new(1, 1),
+                NumberSequenceKeypoint.new(0,   0.05),
+                NumberSequenceKeypoint.new(0.5, 0.25),
+                NumberSequenceKeypoint.new(1,   1.0),
             }
             pe.Color = ColorSequence.new{
                 ColorSequenceKeypoint.new(0,   cols[1]),
                 ColorSequenceKeypoint.new(0.5, cols[2]),
                 ColorSequenceKeypoint.new(1,   cols[3]),
             }
-            local duration = 0.4 + math.random() * 0.5
             task.delay(duration, function()
-                if pe and pe.Parent then pe.Enabled = false; Debris:AddItem(pe, 0.5) end
+                if pe and pe.Parent then pe.Enabled = false end
             end)
         end
     end
 
     local function doAmbientLightning(hrp2)
-        local count = 1 + math.random(0, 2)
-        local cols  = BOLT_COLORS[chargePhase] or BOLT_COLORS[1]
+        local p     = math.clamp(orbPhase, 1, 5)
+        local count = 1 + math.random(0, 1 + math.floor(p * 0.6))  -- more bolts at higher phases
+        local cols  = BOLT_COLORS[orbPhase] or BOLT_COLORS[1]
         for i = 1, count do
             task.delay(i * 0.07, function()
                 if not hrp2 or not hrp2.Parent then return end
@@ -2194,9 +2998,9 @@ local function initCharacter(char)
                         ColorSequenceKeypoint.new(0, cols[1]),
                         ColorSequenceKeypoint.new(1, cols[2]),
                     }
-                    b.beam.Width0        = 0.35 + chargePhase * 0.12
-                    b.beam.Width1        = 0.08 + chargePhase * 0.04
-                    b.beam.LightEmission = 1 + chargePhase * 0.3
+                    b.beam.Width0        = 0.25 + p * 0.14
+                    b.beam.Width1        = 0.06 + p * 0.05
+                    b.beam.LightEmission = 0.8 + p * 0.35
                     task.spawn(function()
                         for _ = 1, 4 do
                             task.wait(0.055)
@@ -2222,24 +3026,29 @@ local function initCharacter(char)
 
     ambientConn = RunService.Heartbeat:Connect(function()
         if isCharging then return end
+        if gState.active then return end   -- griefer mode handles its own idle fx
         local now = tick()
         if now - lastAmbientTime < nextAmbientDelay then return end
         lastAmbientTime  = now
-        nextAmbientDelay = 2.5 + math.random() * 4.5
+        nextAmbientDelay = nextDelay()
 
         local char2 = lp.Character
         if not char2 then return end
         local hrp2 = char2:FindFirstChild("HumanoidRootPart")
         if not hrp2 then return end
 
+        -- At higher phases, fire tends to both hands + lightning together
+        local p    = math.clamp(orbPhase, 1, 5)
         local roll = math.random()
-        if roll < 0.5 then
+        local bothThreshold  = 0.15 + p * 0.14   -- p1≈0.29  p5≈0.85  (chance of fire+lightning)
+        local lightningOnly  = bothThreshold + 0.25
+        if roll < bothThreshold then
             doAmbientHandFire(char2)
-        elseif roll < 0.85 then
+            doAmbientLightning(hrp2)
+        elseif roll < lightningOnly then
             doAmbientLightning(hrp2)
         else
             doAmbientHandFire(char2)
-            doAmbientLightning(hrp2)
         end
     end)
 
@@ -2288,9 +3097,94 @@ local function initCharacter(char)
     end)
 end
 
+--// EMOTE SYSTEM
+local EMOTE_IDS = {
+    "rbxassetid://125122407973000",
+    "rbxassetid://91668361249766",
+    "rbxassetid://118424088638426",
+    "rbxassetid://110994920501493",
+    "rbxassetid://83341137622668",
+    "rbxassetid://114603395814889",
+    "rbxassetid://118947009579831",
+    "rbxassetid://128045598388929",
+    "rbxassetid://92140002522935",
+    "rbxassetid://91533128194560",
+}
+
+local isEmoting         = false
+local emoteTrack        = nil
+local emoteSavedSpeed   = 16
+local emoteSavedAnchored = false
+
+local function startEmote()
+    local char = lp.Character
+    if not char then return end
+    local humanoid = char:FindFirstChildWhichIsA("Humanoid")
+    local hrp      = char:FindFirstChild("HumanoidRootPart")
+    if not humanoid or not hrp then return end
+
+    -- Can't emote while charging
+    if isCharging then return end
+
+    -- Stop any playing tracks
+    for _, t in pairs(tracks) do
+        if t and t.IsPlaying then pcall(t.Stop, t, 0.15) end
+    end
+    if emoteTrack then pcall(emoteTrack.Stop, emoteTrack, 0.1) end
+
+    -- Pick a random emote
+    local chosenId = EMOTE_IDS[math.random(1, #EMOTE_IDS)]
+    local anim = Instance.new("Animation")
+    anim.AnimationId = chosenId
+    emoteTrack = humanoid:LoadAnimation(anim)
+    emoteTrack.Priority = Enum.AnimationPriority.Action4
+    emoteTrack.Looped   = true
+
+    -- Freeze the character
+    emoteSavedSpeed    = humanoid.WalkSpeed
+    emoteSavedAnchored = hrp.Anchored
+    humanoid.WalkSpeed = 0
+    hrp.Anchored       = true
+
+    emoteTrack:Play(0.2)
+    isEmoting = true
+end
+
+local function stopEmote()
+    local char = lp.Character
+    if not char then return end
+    local humanoid = char:FindFirstChildWhichIsA("Humanoid")
+    local hrp      = char:FindFirstChild("HumanoidRootPart")
+
+    if emoteTrack then
+        pcall(emoteTrack.Stop, emoteTrack, 0.25)
+        emoteTrack = nil
+    end
+
+    if humanoid then humanoid.WalkSpeed = emoteSavedSpeed end
+    if hrp      then hrp.Anchored       = emoteSavedAnchored end
+
+    isEmoting = false
+
+    -- Resume idle so the character doesn't T-pose
+    if tracks.idle then tracks.idle:Play(0.2) end
+
+    -- Let the humanoid walk again
+    if humanoid then
+        task.delay(0.05, function()
+            if humanoid and humanoid.Parent then
+                humanoid:ChangeState(Enum.HumanoidStateType.GettingUp)
+                task.wait(0.03)
+                humanoid:ChangeState(Enum.HumanoidStateType.Running)
+            end
+        end)
+    end
+end
+
 --// INPUT
 UserInputService.InputBegan:Connect(function(input, gp)
     if gp then return end
+    if gState.active then return end   -- griefer mode owns input
     local char = lp.Character
     if not char then return end
     local humanoid = char:FindFirstChildWhichIsA("Humanoid")
@@ -2298,6 +3192,7 @@ UserInputService.InputBegan:Connect(function(input, gp)
     if not humanoid or not hrp then return end
 
     if input.UserInputType == Enum.UserInputType.MouseButton1 then
+        if isEmoting then return end  -- block dash/punch while emoting
         if isCharging and chargePhase < 3 then return end
         if doDash(hrp, humanoid) then
             doPunch(char)
@@ -2305,7 +3200,17 @@ UserInputService.InputBegan:Connect(function(input, gp)
     end
 
     if input.KeyCode == Enum.KeyCode.Z then
+        if isEmoting then return end  -- block charge while emoting
         toggleCharge(hrp)
+    end
+
+    if input.KeyCode == Enum.KeyCode.B then
+        if isCharging then return end  -- can't emote while charging
+        if isEmoting then
+            stopEmote()
+        else
+            startEmote()
+        end
     end
 end)
 
