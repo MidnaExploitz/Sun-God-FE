@@ -1285,7 +1285,7 @@ keybindInfo.Font             = Enum.Font.Gotham
 keybindInfo.TextSize         = 13
 keybindInfo.TextWrapped      = true
 keybindInfo.TextXAlignment   = Enum.TextXAlignment.Left
-keybindInfo.Text             = "[LMB]  Dash + Punch    [Z]  Toggle Charge\n[C]  Open / Close Settings"
+keybindInfo.Text             = "[LMB]  Dash + Punch    [Z]  Toggle Charge\n[V]  Emote    [C]  Open / Close Settings"
 
 UserInputService.InputBegan:Connect(function(input, gp)
     if gp then return end
@@ -1346,10 +1346,32 @@ local gState = {
 }
 for g in pairs(GRIEFER_ANIM_IDS) do gState.variantIdx[g] = 1 end
 
-local gTracks       = {}
-local gActiveTrack  = nil
-local gLastAttack   = 0
-local gConnections  = {}
+local gTracks        = {}
+local gActiveTrack   = nil
+local gLastAttack    = 0
+local gConnections   = {}
+local gCurrentGroup  = ""   -- tracks which group is active so Heartbeat doesn't re-trigger every frame
+local gEmoteTracks   = {}   -- pool of loaded emote animations for griefer mode
+local gIsEmoting     = false
+local gEmoteTrack    = nil
+
+--// EMOTE IDS (defined here so both griefer and sun god systems can reference them)
+local EMOTE_IDS = {
+    "rbxassetid://125122407973000",
+    "rbxassetid://91668361249766",
+    "rbxassetid://118424088638426",
+    "rbxassetid://110994920501493",
+    "rbxassetid://83341137622668",
+    "rbxassetid://114603395814889",
+    "rbxassetid://118947009579831",
+    "rbxassetid://128045598388929",
+    "rbxassetid://92140002522935",
+    "rbxassetid://91533128194560",
+    "rbxassetid://94864314758557",
+    "rbxassetid://81278048027206",
+    "rbxassetid://81251332025443",
+    "rbxassetid://124127012123232",
+}
 
 -- Stamina GUI (shared, recolored for griefer)
 -- (uses the existing screenGui from the sun god side — we just recolor it)
@@ -1365,13 +1387,30 @@ local function grieferLoadAnims(char)
         for _, id in ipairs(ids) do
             local anim = Instance.new("Animation")
             anim.AnimationId = "rbxassetid://" .. id
+            local pri
+            if group == "idle" then
+                pri = Enum.AnimationPriority.Idle
+            elseif group == "walk" or group == "jump" or group == "sprint" then
+                pri = Enum.AnimationPriority.Movement
+            elseif group == "block" then
+                pri = Enum.AnimationPriority.Action
+            else
+                pri = Enum.AnimationPriority.Action4
+            end
             local t = animator:LoadAnimation(anim)
-            local pri = (group == "idle")   and Enum.AnimationPriority.Idle
-                     or (group == "walk" or group == "jump" or group == "sprint") and Enum.AnimationPriority.Movement
-                     or Enum.AnimationPriority.Action4
             t.Priority = pri
             table.insert(gTracks[group], t)
         end
+    end
+    -- Load emote tracks (same pool as sun god, shared IDs)
+    gEmoteTracks = {}
+    for _, id in ipairs(EMOTE_IDS) do
+        local anim = Instance.new("Animation")
+        anim.AnimationId = id
+        local t = animator:LoadAnimation(anim)
+        t.Priority = Enum.AnimationPriority.Action4
+        t.Looped   = true
+        table.insert(gEmoteTracks, t)
     end
 end
 
@@ -1387,24 +1426,29 @@ end
 local function gPlayGroup(group, looped, fade)
     local pool = gTracks[group]
     if not pool or #pool == 0 then return end
+    -- Only switch if we're not already playing this group
+    if gCurrentGroup == group and gActiveTrack and gActiveTrack.IsPlaying then return end
     local idx   = gState.variantIdx[group]
     local track = pool[idx]
+    -- Only advance variant index now that we're actually going to play it
     gState.variantIdx[group] = (idx % #pool) + 1
-    if gActiveTrack and gActiveTrack ~= track and gActiveTrack.IsPlaying then
-        gActiveTrack:Stop(fade or 0.2)
+    -- Stop any other track that isn't this one
+    for _, pool2 in pairs(gTracks) do
+        for _, t in ipairs(pool2) do
+            if t ~= track and t.IsPlaying then t:Stop(fade or 0.2) end
+        end
     end
     track.Looped = looped
     if not track.IsPlaying then track:Play(fade or 0.15) end
-    gActiveTrack = track
+    gActiveTrack  = track
+    gCurrentGroup = group
 end
 
 local function gSyncSpeed(char)
     local humanoid = char and char:FindFirstChildWhichIsA("Humanoid")
     if not humanoid then return end
-    if gState.attacking then
-        humanoid.WalkSpeed = GRIEFER_CFG.ATTACK_MOVE_SPD
-    elseif gState.blocking then
-        humanoid.WalkSpeed = GRIEFER_CFG.BLOCK_MOVE_SPD
+    if gState.attacking or gState.blocking then
+        humanoid.WalkSpeed = 0
     elseif gState.sprinting then
         humanoid.WalkSpeed = GRIEFER_CFG.SPRINT_SPEED
     else
@@ -1413,24 +1457,42 @@ local function gSyncSpeed(char)
 end
 
 local function gRefreshMovement(char)
-    if gState.attacking or gState.blocking then return end
-    local hrpG = char and char:FindFirstChild("HumanoidRootPart")
+    if gState.attacking or gState.blocking then return end    local hrpG = char and char:FindFirstChild("HumanoidRootPart")
     if not hrpG then return end
     local humanoid = char:FindFirstChildWhichIsA("Humanoid")
     local vel    = hrpG.AssemblyLinearVelocity
     local flat   = Vector2.new(vel.X, vel.Z).Magnitude
     local moving = flat > 1.0
     local falling = humanoid and humanoid:GetState() == Enum.HumanoidStateType.Freefall
+
+    local desired
     if falling then
-        gPlayGroup("jump", false)
+        desired = "jump"
     elseif gState.sprinting and moving then
+        desired = "sprint"
+    elseif moving then
+        desired = "walk"
+    else
+        desired = "idle"
+    end
+
+    -- Only switch if the desired group actually changed
+    if desired == gCurrentGroup and gActiveTrack and gActiveTrack.IsPlaying then return end
+
+    if desired == "sprint" then
+        gCurrentGroup = ""   -- clear so gPlayGroup doesn't early-return
         gPlayGroup("sprint", true)
         if gTracks.sprint and gTracks.sprint[1] then
             gTracks.sprint[1]:AdjustSpeed(GRIEFER_CFG.SPRINT_ANIM_SPD)
         end
-    elseif moving then
+    elseif desired == "jump" then
+        gCurrentGroup = ""
+        gPlayGroup("jump", false)
+    elseif desired == "walk" then
+        gCurrentGroup = ""
         gPlayGroup("walk", true)
     else
+        gCurrentGroup = ""
         gPlayGroup("idle", true)
     end
 end
@@ -1621,6 +1683,7 @@ local function startGrieferMode(char)
     gState.blocking  = false
     gState.sprinting = false
     gState.dashCD    = false
+    gCurrentGroup    = ""
 
     local humanoid = char:FindFirstChildWhichIsA("Humanoid")
     local hrpG     = char:FindFirstChild("HumanoidRootPart")
@@ -1629,20 +1692,8 @@ local function startGrieferMode(char)
     humanoid.WalkSpeed = GRIEFER_CFG.NORMAL_SPEED
     gPlayGroup("idle", true)
 
-    -- Movement connection
-    gConnections.run = humanoid.Running:Connect(function(speed)
-        if gState.attacking or gState.blocking then return end
-        if speed > 0.5 then
-            gPlayGroup("walk", true)
-        else
-            gPlayGroup("idle", true)
-        end
-    end)
-    gConnections.jump = humanoid.StateChanged:Connect(function(_, new)
-        if new == Enum.HumanoidStateType.Jumping and not gState.attacking then
-            gPlayGroup("jump", false)
-        end
-    end)
+    -- Movement and animation are handled entirely in grieferHeartbeat.
+    -- No separate Running/StateChanged connections — they would fight the Heartbeat and cause stutter.
 
     grieferHeartbeat = RunService.Heartbeat:Connect(function(dt)
         if not gState.active then return end
@@ -1678,7 +1729,7 @@ local function startGrieferMode(char)
         gSyncSpeed(char2)
         updateGrieferStaminaBar(gState.stamina / GRIEFER_CFG.SPRINT_MAX)
 
-        if not gState.attacking and not gState.blocking then
+        if not gState.attacking and not gState.blocking and not gIsEmoting then
             gRefreshMovement(char2)
         end
     end)
@@ -1690,8 +1741,17 @@ local function stopGrieferMode(char)
         if c and c.Disconnect then c:Disconnect() end
         gConnections[k] = nil
     end
+    -- Stop emote if active
+    if gIsEmoting then
+        if gEmoteTrack and gEmoteTrack.IsPlaying then gEmoteTrack:Stop(0) end
+        gEmoteTrack  = nil
+        gIsEmoting   = false
+        local hrpG = char and char:FindFirstChild("HumanoidRootPart")
+        if hrpG then hrpG.Anchored = false end
+    end
     gStopAll(0.2)
-    gActiveTrack = nil
+    gActiveTrack  = nil
+    gCurrentGroup = ""
     -- Restore walkspeed to sun god default
     local humanoid = char and char:FindFirstChildWhichIsA("Humanoid")
     if humanoid then humanoid.WalkSpeed = 16 end
@@ -1704,25 +1764,31 @@ local function gDoAttack(char)
     local now = tick()
     if (now - gLastAttack) < GRIEFER_CFG.ATTACK_COOLDOWN then return end
 
-    gLastAttack     = now
+    gLastAttack      = now
     gState.attacking = true
 
-    local hrpG = char and char:FindFirstChild("HumanoidRootPart")
+    local hrpG     = char and char:FindFirstChild("HumanoidRootPart")
     local humanoid = char and char:FindFirstChildWhichIsA("Humanoid")
     if not hrpG or not humanoid then gState.attacking = false; return end
 
-    gSyncSpeed(char)
+    -- Lock movement completely during attack
+    humanoid.WalkSpeed  = 0
     humanoid.AutoRotate = false
 
     local atkTrack = gTracks.attack and gTracks.attack[1]
-    if not atkTrack then gState.attacking = false; return end
+    if not atkTrack then
+        humanoid.WalkSpeed  = GRIEFER_CFG.NORMAL_SPEED
+        humanoid.AutoRotate = true
+        gState.attacking    = false
+        return
+    end
 
     gStopAll(0)
     atkTrack.Looped = false
     atkTrack:Play(0.08)
     atkTrack:AdjustSpeed(GRIEFER_CFG.ATTACK_SPEED_MOD)
-    gActiveTrack = atkTrack
-
+    gActiveTrack  = atkTrack
+    gCurrentGroup = "attack"
     local snd = Instance.new("Sound")
     snd.SoundId = GRIEFER_CFG.ATTACK_SOUND_ID
     snd.Volume  = 0.9
@@ -1739,7 +1805,9 @@ local function gDoAttack(char)
     if not done then conn:Disconnect(); atkTrack:Stop(0) end
 
     humanoid.AutoRotate = true
+    humanoid.WalkSpeed  = GRIEFER_CFG.NORMAL_SPEED
     gState.attacking    = false
+    gCurrentGroup       = ""
     gSyncSpeed(char)
     gRefreshMovement(char)
 end
@@ -1792,11 +1860,26 @@ local function gStartBlock(char)
     if not gState.active then return end
     if gState.attacking or gState.blocking then return end
     gState.blocking = true
+    gCurrentGroup   = "block"
+
     local humanoid = char and char:FindFirstChildWhichIsA("Humanoid")
-    if humanoid then humanoid.WalkSpeed = GRIEFER_CFG.BLOCK_MOVE_SPD end
-    gStopAll(0.2)
+    if humanoid then humanoid.WalkSpeed = 0 end
+
+    -- Stop only movement-layer tracks, not the block track itself
+    for group, pool in pairs(gTracks) do
+        if group ~= "block" then
+            for _, t in ipairs(pool) do
+                if t.IsPlaying then t:Stop(0.15) end
+            end
+        end
+    end
+
     local bt = gTracks.block and gTracks.block[1]
-    if bt then bt.Looped = true; bt:Play(0.1); gActiveTrack = bt end
+    if bt then
+        bt.Looped = true
+        if not bt.IsPlaying then bt:Play(0.1) end
+        gActiveTrack = bt
+    end
 end
 
 local function gStopBlock(char)
@@ -1807,6 +1890,60 @@ local function gStopBlock(char)
     if bt and bt.IsPlaying then bt:Stop(0.2) end
     local humanoid = char and char:FindFirstChildWhichIsA("Humanoid")
     if humanoid then humanoid.WalkSpeed = GRIEFER_CFG.NORMAL_SPEED end
+    gCurrentGroup = ""
+    gSyncSpeed(char)
+    gRefreshMovement(char)
+end
+
+-- Griefer emote (V key toggles, loops until V pressed again)
+local function gStartEmote(char)
+    if not gState.active then return end
+    if gState.attacking or gState.blocking then return end
+    if gIsEmoting then return end
+    if #gEmoteTracks == 0 then return end
+
+    local humanoid = char and char:FindFirstChildWhichIsA("Humanoid")
+    local hrp      = char and char:FindFirstChild("HumanoidRootPart")
+    if not humanoid or not hrp then return end
+
+    gStopAll(0.15)
+
+    local track = gEmoteTracks[math.random(1, #gEmoteTracks)]
+    track.Looped = true
+    track:Play(0.2)
+    gEmoteTrack  = track
+    gIsEmoting   = true
+    gCurrentGroup = "emote"
+
+    humanoid.WalkSpeed = 0
+    hrp.Anchored       = true
+end
+
+local function gStopEmote(char)
+    if not gState.active then return end
+    if not gIsEmoting then return end
+
+    local humanoid = char and char:FindFirstChildWhichIsA("Humanoid")
+    local hrp      = char and char:FindFirstChild("HumanoidRootPart")
+
+    if gEmoteTrack and gEmoteTrack.IsPlaying then
+        gEmoteTrack:Stop(0.2)
+    end
+    gEmoteTrack  = nil
+    gIsEmoting   = false
+    gCurrentGroup = ""
+
+    if humanoid then humanoid.WalkSpeed = GRIEFER_CFG.NORMAL_SPEED end
+    if hrp      then hrp.Anchored = false end
+
+    -- Snap back to idle so there's no T-pose gap
+    task.delay(0.05, function()
+        if humanoid and humanoid.Parent then
+            humanoid:ChangeState(Enum.HumanoidStateType.GettingUp)
+            task.wait(0.03)
+            humanoid:ChangeState(Enum.HumanoidStateType.Running)
+        end
+    end)
     gRefreshMovement(char)
 end
 
@@ -1830,8 +1967,15 @@ grieferBtn.MouseButton1Click:Connect(function()
         gState.active = true
         grieferGui.Enabled = true
 
+        -- Kill Roblox's default Animate script so it can't fight griefer animations
+        local animScript = char:FindFirstChild("Animate")
+        if animScript then animScript.Enabled = false end
+
         -- Hide sun orb and title
-        if sunOrb then sunOrb.Transparency = 1
+        if sunOrb then
+            sunOrb.Transparency = 1
+            local light = sunOrb:FindFirstChildWhichIsA("PointLight")
+            if light then light.Enabled = false end
             if sunFire   then sunFire.Enabled   = false end
             if sunCorona then sunCorona.Enabled = false end
         end
@@ -1840,6 +1984,11 @@ grieferBtn.MouseButton1Click:Connect(function()
         -- Stop charge if active
         local hrp2 = char:FindFirstChild("HumanoidRootPart")
         if isCharging and hrp2 then toggleCharge(hrp2) end
+
+        -- Stop all sun god tracks so they don't keep playing under griefer mode
+        for _, t in pairs(tracks) do
+            if t and t.IsPlaying then pcall(t.Stop, t, 0.15) end
+        end
 
         -- Hide sun god bars
         if chargeBar then chargeBar.Visible = false end
@@ -1851,11 +2000,17 @@ grieferBtn.MouseButton1Click:Connect(function()
         gState.active = false
         grieferGui.Enabled = false
 
+        -- Re-enable Roblox's Animate script for sun god side
+        local animScript = char:FindFirstChild("Animate")
+        if animScript then animScript.Enabled = true end
+
         stopGrieferMode(char)
 
         -- Restore sun orb
         if sunOrb and toggles.sunOrb then
             sunOrb.Transparency = 0.2
+            local light = sunOrb:FindFirstChildWhichIsA("PointLight")
+            if light then light.Enabled = true end
             if sunFire   then sunFire.Enabled   = true end
             if sunCorona then sunCorona.Enabled = true end
         end
@@ -1874,24 +2029,31 @@ UserInputService.InputBegan:Connect(function(input, gp)
     if not char then return end
 
     if input.UserInputType == Enum.UserInputType.MouseButton1 then
+        if gIsEmoting then return end
         task.spawn(function()
-            gDoDash(char)
             gDoAttack(char)
         end)
+    elseif input.KeyCode == Enum.KeyCode.B then
+        if gIsEmoting then return end
+        gStartBlock(char)
+    elseif input.KeyCode == Enum.KeyCode.V then
+        if gIsEmoting then
+            gStopEmote(char)
+        else
+            gStartEmote(char)
+        end
     elseif input.KeyCode == Enum.KeyCode.LeftShift then
         gState.shiftHeld = true
-    elseif input.KeyCode == Enum.KeyCode.F then
-        gStartBlock(char)
     end
 end)
 
 UserInputService.InputEnded:Connect(function(input)
     if not gState.active then return end
     local char = lp.Character
-    if input.KeyCode == Enum.KeyCode.LeftShift then
-        gState.shiftHeld = false
-    elseif input.KeyCode == Enum.KeyCode.F then
+    if input.KeyCode == Enum.KeyCode.B then
         gStopBlock(char)
+    elseif input.KeyCode == Enum.KeyCode.LeftShift then
+        gState.shiftHeld = false
     end
 end)
 
@@ -2684,43 +2846,77 @@ local function toggleCharge(hrp)
 
         if toggles.charShake then
             if charShakeConn then charShakeConn:Disconnect() end
-            local lastPhase3Teleport = 0
-            local lastPhase4Teleport = 0
 
-            charShakeConn = RunService.Heartbeat:Connect(function()
-                if not isCharging or not hrp or not chargeBaseCF then return end
-                local t = tick()
+            local bp = Instance.new("BodyPosition")
+            bp.MaxForce = Vector3.new(1e5, 1e5, 1e5)
+            bp.P        = 8000
+            bp.D        = 600
+            bp.Position = hrp.Position
+            bp.Parent   = hrp
 
-                if chargePhase == 5 then
+            local bg = Instance.new("BodyGyro")
+            bg.MaxTorque = Vector3.new(0, 1e5, 0)  -- only yaw, don't fight tilt
+            bg.P         = 6000
+            bg.D         = 500
+            bg.CFrame    = hrp.CFrame
+            bg.Parent    = hrp
+
+            -- Per-phase drift config: { radius, bobHeight, speed, changeInterval }
+            -- All smooth lerp-based, no snapping
+            local DRIFT_CFG = {
+                [1] = { radius = 0.18, bob = 0.10, speed = 2.5, interval = 2.8 },
+                [2] = { radius = 0.45, bob = 0.28, speed = 3.5, interval = 2.2 },
+                [3] = { radius = 0.90, bob = 0.55, speed = 5.0, interval = 1.6 },
+                [4] = { radius = 1.60, bob = 0.90, speed = 7.0, interval = 1.1 },
+                [5] = { radius = 0.30, bob = 0.50, speed = 2.0, interval = 3.5 },  -- divine: calm, floaty
+            }
+
+            local currentOffset  = Vector3.new(0, 0, 0)
+            local targetOffset   = Vector3.new(0, 0, 0)
+            local lastChangeTime = tick()
+
+            local function pickNewTarget(p)
+                local cfg = DRIFT_CFG[p] or DRIFT_CFG[1]
+                local angle = math.random() * math.pi * 2
+                local dist  = cfg.radius * (0.5 + math.random() * 0.5)
+                return Vector3.new(
+                    math.cos(angle) * dist,
+                    cfg.bob * (math.random() - 0.5) * 2,
+                    math.sin(angle) * dist
+                )
+            end
+
+            charShakeConn = RunService.Heartbeat:Connect(function(dt)
+                if not isCharging or not hrp or not hrp.Parent then
+                    if bp and bp.Parent then bp:Destroy() end
+                    if bg and bg.Parent then bg:Destroy() end
                     return
-                elseif chargePhase == 4 then
-                    local teleportInterval = 0.18 + math.random() * 0.22
-                    if t - lastPhase4Teleport > teleportInterval then
-                        lastPhase4Teleport = t
-                        local tx = (math.random() - 0.5) * 3.5
-                        local tz = (math.random() - 0.5) * 3.5
-                        local ty = (math.random() < 0.35) and (1.2 + math.random() * 2.8) or (0.2 + (math.random() - 0.5) * 1.6)
-                        hrp.CFrame = chargeBaseCF * CFrame.new(tx, ty, tz)
-                    end
-                elseif chargePhase == 3 then
-                    if t - lastPhase3Teleport > (0.042 + math.random() * 0.055) then
-                        lastPhase3Teleport = t
-                        local tx = (math.random() - 0.5) * 1.55
-                        local ty = 0.35 + (math.random() - 0.5) * 0.95
-                        local tz = (math.random() - 0.5) * 1.55
-                        hrp.CFrame = chargeBaseCF * CFrame.new(tx, ty, tz)
-                    end
-                else
-                    local mult     = (chargePhase == 2 and 2) or 1
-                    local baseAmt  = 0.09
-                    local extra    = (chargePhase == 2 and 0.28) or 0
-                    local flyBob   = (chargePhase >= 2) and math.sin(t * 1.15) * 1.35 or 0
-                    hrp.CFrame = chargeBaseCF * CFrame.new(
-                        math.sin(t * 21 * mult) * (baseAmt + extra),
-                        math.sin(t * 26 * mult) * (baseAmt + extra) + flyBob,
-                        math.sin(t * 23 * mult) * (baseAmt + extra)
-                    )
                 end
+
+                local t   = tick()
+                local p   = math.clamp(chargePhase, 1, 5)
+                local cfg = DRIFT_CFG[p]
+
+                -- Pick a new drift target every `interval` seconds
+                if t - lastChangeTime >= cfg.interval then
+                    lastChangeTime = t
+                    targetOffset   = pickNewTarget(p)
+                end
+
+                -- Smoothly lerp currentOffset toward target each frame
+                local lerpSpeed = cfg.speed * dt
+                currentOffset = currentOffset:Lerp(targetOffset, math.min(lerpSpeed, 1))
+
+                -- Apply on top of wherever the player actually is right now
+                bp.Position = hrp.Position + currentOffset
+                bg.CFrame   = CFrame.new(hrp.Position) * (hrp.CFrame - hrp.CFrame.Position)
+            end)
+
+            local oldConn = charShakeConn
+            task.spawn(function()
+                while charShakeConn == oldConn and isCharging do task.wait(0.1) end
+                if bp and bp.Parent then bp:Destroy() end
+                if bg and bg.Parent then bg:Destroy() end
             end)
         end
 
@@ -2741,6 +2937,14 @@ local function toggleCharge(hrp)
 
         if camShakeConn  then camShakeConn:Disconnect();  camShakeConn  = nil end
         if charShakeConn then charShakeConn:Disconnect(); charShakeConn = nil end
+
+        -- Clean up any BodyPosition/BodyGyro left on the HRP from charShake
+        if hrp and hrp.Parent then
+            local bp = hrp:FindFirstChildWhichIsA("BodyPosition")
+            local bg = hrp:FindFirstChildWhichIsA("BodyGyro")
+            if bp then bp:Destroy() end
+            if bg then bg:Destroy() end
+        end
 
         humanoid.WalkSpeed = originalWalkSpeed
         hrp.Anchored       = originalAnchored
@@ -2915,9 +3119,9 @@ local function initCharacter(char)
     end
 
     -- Returns how long to wait before the next ambient trigger, scaling down with orbPhase
-    -- phase1: 3.5–7s  phase2: 2.5–5s  phase3: 1.5–3.2s  phase4: 0.9–2.2s  phase5: 0.6–1.4s
-    local AMBIENT_DELAY_MIN = { 3.5, 2.5, 1.5, 0.9,  0.6 }
-    local AMBIENT_DELAY_MAX = { 7.0, 5.0, 3.2, 2.2,  1.4 }
+    -- Tuned down: phase1: 5–10s  phase2: 4–8s  phase3: 3–6s  phase4: 2–4.5s  phase5: 2.5–5s (divine is calmer)
+    local AMBIENT_DELAY_MIN = { 5.0, 4.0, 3.0, 2.0, 2.5 }
+    local AMBIENT_DELAY_MAX = { 10.0, 8.0, 6.0, 4.5, 5.0 }
 
     local function nextDelay()
         local p   = math.clamp(orbPhase, 1, 5)
@@ -2940,10 +3144,11 @@ local function initCharacter(char)
         local targets = (math.random() < bothChance) and hands or { hands[math.random(1, #hands)] }
         local cols    = getAmbientPhaseColor()
 
-        -- Size and duration grow with phase
-        local sizeBase = 0.3 + p * 0.18    -- p1=0.48  p5=1.2
-        local sizePeak = 1.4 + p * 0.45    -- p1=1.85  p5=3.65
-        local duration = (0.4 + math.random() * 0.4) + p * 0.18
+        -- Phase 5 (Divine) is intentionally subtle — toned down size and duration
+        -- Size and duration grow with phase, but capped lower than before
+        local sizeBase = 0.2 + p * 0.10    -- p1=0.30  p5=0.70  (was 0.48–1.2)
+        local sizePeak = 0.9 + p * 0.22    -- p1=1.12  p5=2.00  (was 1.85–3.65)
+        local duration = (0.3 + math.random() * 0.3) + p * 0.10
 
         for _, hand in ipairs(targets) do
             local ghost = Instance.new("Part")
@@ -2963,9 +3168,9 @@ local function initCharacter(char)
                 NumberSequenceKeypoint.new(0.7, sizeBase * 1.2),
                 NumberSequenceKeypoint.new(1,   0),
             }
-            pe.Lifetime      = NumberRange.new(0.35 + p * 0.1, 0.8 + p * 0.2)
-            pe.Rate          = 60 + p * 30
-            pe.Speed         = NumberRange.new(2 + p, 8 + p * 2)
+            pe.Lifetime      = NumberRange.new(0.28 + p * 0.07, 0.6 + p * 0.12)
+            pe.Rate          = 30 + p * 14    -- was 60 + p * 30
+            pe.Speed         = NumberRange.new(1.5 + p * 0.5, 5 + p * 1.2)
             pe.SpreadAngle   = Vector2.new(70, 70)
             pe.RotSpeed      = NumberRange.new(-140, 140)
             pe.LightEmission = 1
@@ -2987,7 +3192,9 @@ local function initCharacter(char)
 
     local function doAmbientLightning(hrp2)
         local p     = math.clamp(orbPhase, 1, 5)
-        local count = 1 + math.random(0, 1 + math.floor(p * 0.6))  -- more bolts at higher phases
+        -- Reduced bolt count — divine phase especially toned down
+        local maxExtra = (p == 5) and 1 or math.floor(p * 0.5)
+        local count = 1 + math.random(0, maxExtra)
         local cols  = BOLT_COLORS[orbPhase] or BOLT_COLORS[1]
         for i = 1, count do
             task.delay(i * 0.07, function()
@@ -2998,9 +3205,11 @@ local function initCharacter(char)
                         ColorSequenceKeypoint.new(0, cols[1]),
                         ColorSequenceKeypoint.new(1, cols[2]),
                     }
-                    b.beam.Width0        = 0.25 + p * 0.14
-                    b.beam.Width1        = 0.06 + p * 0.05
-                    b.beam.LightEmission = 0.8 + p * 0.35
+                    -- Thinner beams than before, divine capped lower
+                    local widthMult = (p == 5) and 0.5 or 1.0
+                    b.beam.Width0        = (0.18 + p * 0.09) * widthMult
+                    b.beam.Width1        = (0.04 + p * 0.03) * widthMult
+                    b.beam.LightEmission = 0.6 + p * 0.18
                     task.spawn(function()
                         for _ = 1, 4 do
                             task.wait(0.055)
@@ -3038,10 +3247,11 @@ local function initCharacter(char)
         if not hrp2 then return end
 
         -- At higher phases, fire tends to both hands + lightning together
+        -- Divine (p5) is intentionally kept subtle — lower combo chance
         local p    = math.clamp(orbPhase, 1, 5)
         local roll = math.random()
-        local bothThreshold  = 0.15 + p * 0.14   -- p1≈0.29  p5≈0.85  (chance of fire+lightning)
-        local lightningOnly  = bothThreshold + 0.25
+        local bothThreshold  = (p == 5) and 0.20 or (0.10 + p * 0.10)   -- p1≈0.20  p4≈0.50  p5=0.20 (divine stays calm)
+        local lightningOnly  = bothThreshold + 0.20
         if roll < bothThreshold then
             doAmbientHandFire(char2)
             doAmbientLightning(hrp2)
@@ -3053,6 +3263,7 @@ local function initCharacter(char)
     end)
 
     connections.run = humanoid.Running:Connect(function(speed)
+        if gState.active then return end   -- griefer mode owns animations
         if isDashing or isCharging then return end
         if speed > 0.5 then
             playOnly(tracks.walk, 0.2, CFG.walkSpeed)
@@ -3062,6 +3273,7 @@ local function initCharacter(char)
     end)
 
     connections.jump = humanoid.StateChanged:Connect(function(_, new)
+        if gState.active then return end   -- griefer mode owns animations
         if new == Enum.HumanoidStateType.Jumping and not isDashing and not isCharging then
             playOnly(tracks.jump, 0.1, 1)
         end
@@ -3098,19 +3310,6 @@ local function initCharacter(char)
 end
 
 --// EMOTE SYSTEM
-local EMOTE_IDS = {
-    "rbxassetid://125122407973000",
-    "rbxassetid://91668361249766",
-    "rbxassetid://118424088638426",
-    "rbxassetid://110994920501493",
-    "rbxassetid://83341137622668",
-    "rbxassetid://114603395814889",
-    "rbxassetid://118947009579831",
-    "rbxassetid://128045598388929",
-    "rbxassetid://92140002522935",
-    "rbxassetid://91533128194560",
-}
-
 local isEmoting         = false
 local emoteTrack        = nil
 local emoteSavedSpeed   = 16
@@ -3204,7 +3403,7 @@ UserInputService.InputBegan:Connect(function(input, gp)
         toggleCharge(hrp)
     end
 
-    if input.KeyCode == Enum.KeyCode.B then
+    if input.KeyCode == Enum.KeyCode.V then
         if isCharging then return end  -- can't emote while charging
         if isEmoting then
             stopEmote()
